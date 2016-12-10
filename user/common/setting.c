@@ -61,6 +61,8 @@ SETTING setting;
 #define TAG_BATTERYTYPE_JUDGING "batterytype_judging"
 #define TAG_IS_BATTERYTYPE_JUDGING "isbatterytype_judging"
 
+#define TAG_VIBRATE "defendstate"
+#define TAG_IS_VIBRATE "isVibrateFixed"
 
 //the setting file format is as follow
 //{
@@ -182,6 +184,7 @@ eat_bool vibration_fixed(void)
 void set_vibration_state(eat_bool fixed)
 {
     setting.isVibrateFixed = fixed;
+    setting_save();
 }
 
 eat_bool get_autodefend_state(void)
@@ -257,6 +260,7 @@ eat_bool setting_restore(void)
     cJSON *addr = 0;
     cJSON *autolock = 0;
     cJSON *battery = 0;
+    cJSON *defendstate = 0;
 
     setting_initial();
 
@@ -390,6 +394,19 @@ eat_bool setting_restore(void)
     setting.BaterryType_Judging = cJSON_GetObjectItem(battery, TAG_BATTERYTYPE_JUDGING)->valueint;
     setting.isBatteryJudging = cJSON_GetObjectItem(battery, TAG_IS_BATTERYTYPE_JUDGING)->valueint ? EAT_TRUE : EAT_FALSE;
 
+    defendstate = cJSON_GetObjectItem(conf, TAG_VIBRATE);
+    if(!defendstate)
+    {
+        LOG_ERROR("no defendstate config setting file!");
+        eat_fs_Close(fh);
+        free(buf);
+        cJSON_Delete(conf);
+        return EAT_FALSE;
+    }
+    setting.isVibrateFixed = cJSON_GetObjectItem(defendstate, TAG_IS_VIBRATE)->valueint? EAT_TRUE : EAT_FALSE;
+
+    LOG_DEBUG("defendstate: %d", setting.isVibrateFixed);
+
     LOG_DEBUG("BATTERY TYPE IS %d", setting.BatteryType);
 
     free(buf);
@@ -410,6 +427,7 @@ eat_bool setting_save(void)
     cJSON *autolock = cJSON_CreateObject();
     cJSON *battery = cJSON_CreateObject();
 
+    cJSON *defendstate = cJSON_CreateObject();
     char *content = 0;
 
 
@@ -439,7 +457,10 @@ eat_bool setting_save(void)
     cJSON_AddNumberToObject(battery, TAG_IS_BATTERYTYPE_JUDGING, setting.isBatteryJudging);
     cJSON_AddItemToObject(root, TAG_BATTERY, battery);
 
+    cJSON_AddNumberToObject(defendstate, TAG_IS_VIBRATE, setting.isVibrateFixed);
+    cJSON_AddItemToObject(root, TAG_VIBRATE, defendstate);
 
+    LOG_DEBUG("defendstate : %d", setting.isVibrateFixed);
     content = cJSON_Print(root);
     LOG_DEBUG("save setting...");
 

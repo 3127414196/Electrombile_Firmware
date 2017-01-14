@@ -19,7 +19,6 @@
 #include "sms.h"
 #include "vibration.h"
 #include "battery.h"
-#include "seek.h"
 #include "watchdog.h"
 #include "timer.h"
 #include "setting.h"
@@ -149,8 +148,6 @@ void app_main(void *data)
     setting_restore();
 
     fs_initial();
-
-    seek_initial();
 
     startWatchdog();
 

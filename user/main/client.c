@@ -20,7 +20,6 @@
 #include "thread.h"
 #include "thread_msg.h"
 #include "timer.h"
-#include "seek.h"
 #include "response.h"
 #include "msg_queue.h"
 
@@ -38,7 +37,6 @@ static MC_MSG_PROC msgProcs[] =
     {CMD_PING,  cmd_Ping_rsp},
     {CMD_ALARM, cmd_Alarm_rsp},
     {CMD_SMS,   cmd_Sms_rsp},
-    {CMD_SEEK,  cmd_Seek_rsp},
 	{CMD_LOCATE, cmd_Location_rsp},
 	{CMD_SET_AUTOSWITCH, cmd_AutodefendSwitchSet_rsp},
     {CMD_GET_AUTOSWITCH, cmd_AutodefendSwitchGet_rsp},

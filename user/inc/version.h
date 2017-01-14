@@ -20,11 +20,13 @@
  * 1.2.4: change SMS ack to socket message instead of real SMS
  * 1.2.5: allow user to set the battery type manually
  * 1.2.6: remove battery's 50% lower alarm
+ * 1.3.1: add outage alarm
  */
 
 #define VERSION_MAJOR   1
-#define VERSION_MINOR   2
-#define VERSION_MICRO   6
+#define VERSION_MINOR   3
+#define VERSION_MICRO   1
+
 
 #define VERSION_INT(a, b, c)    (a << 16 | b << 8 | c)
 #define VERSION_DOT(a, b, c)    a##.##b##.##c

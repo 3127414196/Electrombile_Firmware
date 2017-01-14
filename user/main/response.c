@@ -24,7 +24,6 @@
 #include "fs.h"
 #include "setting.h"
 #include "battery.h"
-#include "seek.h"
 #include "request.h"
 #include "timer.h"
 #include "msg_queue.h"
@@ -89,39 +88,6 @@ int cmd_Reboot_rsp(const void* msg)
     socket_sendDataDirectly(rsp, sizeof(MSG_HEADER));
 
     eat_reset_module();
-    return 0;
-}
-
-
-int cmd_Seek_rsp(const void* msg)
-{
-    MSG_SEEK_REQ* req = (MSG_SEEK_REQ*)msg;
-    MSG_SEEK_RSP* rsp = NULL;
-
-    if (req->operator == SEEK_ON)
-    {
-        setSeekMode(EAT_TRUE);
-
-        LOG_DEBUG("set seek on.");
-    }
-    else if(req->operator == SEEK_OFF)
-    {
-        setSeekMode(EAT_FALSE);
-        LOG_DEBUG("set seek off.");
-    }
-
-    rsp = alloc_rspMsg(&req->header);
-    if (!rsp)
-    {
-        LOG_ERROR("alloc seek rsp message failed!");
-        return -1;
-    }
-
-    rsp->token = req->token;
-    rsp->result = MSG_SUCCESS;
-
-    socket_sendDataDirectly(rsp, sizeof(MSG_SEEK_RSP));
-
     return 0;
 }
 

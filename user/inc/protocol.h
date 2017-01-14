@@ -307,6 +307,7 @@ enum ALARM_TYPE
     ALARM_VIBRATE   = 3,
     ALARM_BATTERY50 = 4,
     ALARM_BATTERY30 = 5,
+    ALARM_BAT_CUT   = 6,
 };
 
 typedef struct

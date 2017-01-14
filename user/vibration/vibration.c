@@ -86,6 +86,29 @@ static eat_bool vibration_sendAlarm(void)
     return EAT_FALSE;
 }
 
+static eat_bool vibration_alarm_cutoff(void)
+{
+    u8 msgLen = sizeof(MSG_THREAD) + sizeof(ALARM_INFO);
+    MSG_THREAD *msg = NULL;
+    ALARM_INFO *msg_data = NULL;
+
+    msg = allocMsg(msgLen);
+    if(!msg)
+    {
+        LOG_ERROR("alloc memory error");
+        return EAT_FALSE;
+    }
+    msg_data = (ALARM_INFO*)msg->data;
+
+    msg->cmd = CMD_THREAD_ALARM;
+    msg->length = sizeof(ALARM_INFO);
+    msg_data->alarm_type = ALARM_BAT_CUT;
+
+    LOG_DEBUG("vibration alarm:cmd(%d),length(%d),data(%d)", msg->cmd, msg->length, msg_data->alarm_type);
+    return sendMsg(THREAD_MAIN, msg, msgLen);
+
+}
+
 static void move_alarm_timer_handler()
 {
     unsigned char readbuf[3];
@@ -188,7 +211,7 @@ static void move_alarm_timer_handler()
 
 }
 
-static void vibration_timer_handler(void)
+static void vibration_move_handler(void)
 {
     static eat_bool isFirstTime = EAT_TRUE;
 
@@ -216,17 +239,11 @@ static void vibration_timer_handler(void)
         Vibration_setMoved(EAT_FALSE);
     }
 
-    //always to judge if need to alarm , just judge the defend state before send alarm
-    if(Vibration_isMoved())
-    {
-        eat_timer_start(TIMER_MOVE_ALARM, MOVE_TIMER_PERIOD);
-        //vibration_sendAlarm();  //bec use displacement judgement , there do not alarm
-    }
-
     if(Vibration_isMoved())
     {
         ResetVibrationTime();
         LOG_DEBUG("shake!");
+        eat_timer_start(TIMER_MOVE_ALARM, MOVE_TIMER_PERIOD);
     }
     else
     {
@@ -241,7 +258,7 @@ static void vibration_timer_handler(void)
                     vivration_AutolockStateSend(EAT_TRUE);    //TODO:send autolock_msg to main thread
                     set_vibration_state(EAT_TRUE);
                 }
-            }                    
+            }
             Reset_AlarmCount();
         }
     }
@@ -249,6 +266,23 @@ static void vibration_timer_handler(void)
     return;
 }
 
+static void vibration_cutoff_handler(void)
+{
+    static EatGpioLevel_enum last_level = EAT_GPIO_LEVEL_LOW;
+
+    EatGpioLevel_enum pin_level = eat_gpio_read(EAT_PIN62_COL0);
+    if(EAT_GPIO_LEVEL_HIGH == last_level && EAT_GPIO_LEVEL_LOW == pin_level)
+    {
+        vibration_alarm_cutoff();
+    }
+    last_level = pin_level;
+}
+
+static void vibration_oneSecond_Loop(void)
+{
+    vibration_move_handler();
+    vibration_cutoff_handler();
+}
 
 void app_vibration_thread(void *data)
 {
@@ -268,6 +302,8 @@ void app_vibration_thread(void *data)
 	    mma8652_config();
 	}
 
+    eat_gpio_setup(EAT_PIN62_COL0, EAT_GPIO_DIR_INPUT, EAT_GPIO_LEVEL_HIGH);//if default low, device start slowly
+
 	eat_timer_start(TIMER_VIBRATION, setting.vibration_timer_period);
 
 	while(EAT_TRUE)
@@ -279,7 +315,7 @@ void app_vibration_thread(void *data)
                 switch (event.data.timer.timer_id)
                 {
                     case TIMER_VIBRATION:
-                        vibration_timer_handler();
+                        vibration_oneSecond_Loop();
                         eat_timer_start(TIMER_VIBRATION, setting.vibration_timer_period);
                         break;
                     case TIMER_MOVE_ALARM:

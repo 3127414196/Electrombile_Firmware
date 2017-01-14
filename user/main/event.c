@@ -21,7 +21,6 @@
 #include "modem.h"
 #include "fsm.h"
 #include "request.h"
-#include "seek.h"
 #include "data.h"
 #include "adc.h"
 #include "modem.h"
@@ -84,11 +83,6 @@ static int event_timer(const EatEvent_st* event)
             LOG_DEBUG("TIMER_LOOP expire.");
             fsm_run(EVT_LOOP);
             eat_timer_start(event->data.timer.timer_id, setting.main_loop_timer_period);
-            break;
-
-        case TIMER_SEEKAUTOOFF:
-            LOG_DEBUG("TIMER_SEEKAUTOOFF expire!");
-            setSeekMode(EAT_FALSE);
             break;
 
         case TIMER_GPS_SEND:

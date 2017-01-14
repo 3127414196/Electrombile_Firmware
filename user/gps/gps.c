@@ -47,6 +47,9 @@ static eat_bool gps_isGpsFixed(void);
 static eat_bool gps_isCellGet(void);
 static eat_bool gps_DuplicateCheck(LOCAL_GPS *pre_gps, LOCAL_GPS *gps);
 static eat_bool gps_GetGps(void);
+static eat_bool gps_saveGps(void);
+static void device_location_handler(const MSG_THREAD* thread_msg);
+
 
 static long double getdistance(LOCAL_GPS *pre_gps, LOCAL_GPS *gps);
 
@@ -194,6 +197,11 @@ void app_gps_thread(void *data)
                         location_handler(msg->cmd);
                         break;
 
+                    case CMD_THREAD_DEVICE_LOCATION:
+                        LOG_DEBUG("gps get CMD_THREAD_DEVICE_LOCATION.");
+                        device_location_handler(msg);
+                        break;
+
                     case CMD_THREAD_GPSHDOP:
                         LOG_DEBUG("gps get CMD_THREAD_GPSHDOP.");
                         gps_GPSSignalSend(msg);
@@ -243,6 +251,26 @@ static void location_handler(u8 cmd)
     }
 }
 
+static void device_location_handler(const MSG_THREAD* thread_msg)
+{
+    u8 msgLen = (u8)(sizeof(MSG_THREAD) + sizeof(DEVICE_LOCATION_SEQ));
+    MSG_THREAD* msg = allocMsg(msgLen);
+    DEVICE_LOCATION_SEQ *seq = NULL;
+    seq->seq = *((char *)msg->data);;
+
+    if(gps_GetGps())
+    {
+        gps_saveGps();
+    }
+
+    msg->cmd = CMD_THREAD_DEVICE_LOCATION;
+    msg->length = 0;
+
+    seq->seq = (char)thread_msg->data;
+
+    LOG_DEBUG("send CMD_THREAD_DEVICE_LOCATION to THREAD_MAIN.");
+    sendMsg(THREAD_MAIN, msg, msgLen);
+}
 
 
 static eat_bool gps_isGpsFixed(void)
@@ -291,7 +319,7 @@ static eat_bool gps_sendGps(u8 cmd)
     gps->gps.speed = speed;
     gps->gps.course = course;
 
-    if(msg->cmd == CMD_THREAD_LOCATION)
+    if(msg->cmd == CMD_THREAD_LOCATION || msg->cmd == CMD_THREAD_DEVICE_LOCATION)
     {
         LOG_DEBUG("active acquisition:location!");
 
@@ -322,6 +350,26 @@ static eat_bool gps_sendGps(u8 cmd)
     }
 
     return ret;
+}
+
+static eat_bool gps_saveGps(void)
+{
+    LOCAL_GPS gps;
+    LOCAL_GPS * last_gps = NULL;
+
+    gps.isGps = EAT_TRUE;
+    gps.gps.timestamp = rtc_getTimestamp();
+    gps.gps.latitude = latitude;
+    gps.gps.longitude = longitude;
+    gps.gps.speed = speed;
+    gps.gps.course = course;
+
+    memcpy(last_gps, &gps, sizeof(LOCAL_GPS));
+
+    gps_save_last(&gps);//save the last gps in data
+
+    return EAT_TRUE;
+
 }
 
 static eat_bool gps_sendCell(u8 cmd)

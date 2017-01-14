@@ -28,6 +28,7 @@
 #include "msg_queue.h"
 #include "mem.h"
 #include "ftp.h"
+#include "device.h"
 
 typedef int (*EVENT_FUNC)(const EatEvent_st* event);
 typedef struct
@@ -269,6 +270,11 @@ static int threadCmd_Alarm(const MSG_THREAD* msg)
     return cmd_alarm(msg_data->alarm_type);
 }
 
+static int threadCmd_deviceGPS(const MSG_THREAD* msg)
+{
+    return device_sendGPS(((DEVICE_LOCATION_SEQ *)msg->data)->seq);
+}
+
 static int threadCmd_PutEnd(const MSG_THREAD* msg)
 {
     FTP_PUTFILE_INFO *msg_data = (FTP_PUTFILE_INFO *)msg->data;
@@ -413,6 +419,7 @@ static THREAD_MSG_PROC msgProcs[] =
         {CMD_THREAD_AUTOLOCK, threadCmd_AutolockState},
         {CMD_THREAD_GPSHDOP, threadCmd_GPSHdop},
         {CMD_THREAD_PUTEND, threadCmd_PutEnd},
+        {CMD_THREAD_DEVICE_LOCATION, threadCmd_deviceGPS}
 };
 
 static int event_threadMsg(const EatEvent_st* event)

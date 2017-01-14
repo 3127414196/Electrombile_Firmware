@@ -9,4 +9,6 @@
 
 int cmd_device_handler(const void* msg);
 
+int device_sendGPS(char seq);
+
 #endif

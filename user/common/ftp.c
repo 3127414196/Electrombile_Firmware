@@ -74,16 +74,16 @@ static void ftp_closeGPRS(void)
 
 void ftp_upload_file(char *localFileName, char *serverFileName)
 {
-    strncpy(ftp_localFileName, localFileName, strlen(localFileName));
-    strncpy(ftp_serverFileName, serverFileName, strlen(serverFileName));
+    strncpy(ftp_localFileName, localFileName, MAX_LOCALFILENAME_LEN);
+    strncpy(ftp_serverFileName, serverFileName, MAX_SERVERFILENAME_LEN);
     ftp_type = FTP_UPLOAD;
     ftp_openGPRS();
 }
 
 void ftp_download_file(char *localFileName, char *serverFileName)
 {
-    strncpy(ftp_localFileName, localFileName, strlen(localFileName));
-    strncpy(ftp_serverFileName, serverFileName, strlen(serverFileName));
+    strncpy(ftp_localFileName, localFileName, MAX_LOCALFILENAME_LEN);
+    strncpy(ftp_serverFileName, serverFileName, MAX_SERVERFILENAME_LEN);
     ftp_type = FTP_DOWNLOAD;
     ftp_openGPRS();
 }

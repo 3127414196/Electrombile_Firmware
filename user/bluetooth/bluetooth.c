@@ -97,7 +97,7 @@ static void bluetooth_onesecondLoop(void)
 
     time++;
 
-    if(is_bluetoothOn() && !Vibration_isMoved)
+    if(is_bluetoothOn() && !Vibration_isMoved())
     {
         bluetooth_ScanProc(time);
     }

@@ -139,7 +139,7 @@ static void setting_initial(void)
     setting.ipaddr[0] = 118;
     setting.ipaddr[1] = 89;
     setting.ipaddr[2] = 104;
-    setting.ipaddr[3] = 30;
+    setting.ipaddr[3] = 130;
 #endif
 
     strncpy(setting.ftp_domain, "www.xiaoan110.com", MAX_DOMAIN_NAME_LEN);
@@ -166,7 +166,7 @@ static void setting_initial(void)
     setting.isBatteryJudging = EAT_FALSE;
 
     setting.BluetoothSwitch = EAT_TRUE;
-    strncpy(setting.BluetoothId, "10:2a:b3:73:2b:b8,-83", BLUETOOTH_ID_LEN);
+    strncpy(setting.BluetoothId, "00:00:00:00:00:00", BLUETOOTH_ID_LEN);
 
     return;
 }

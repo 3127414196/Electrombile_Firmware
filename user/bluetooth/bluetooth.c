@@ -42,6 +42,7 @@ static int bluetooth_checkId(u8* buf)
         if(!isHostAtNear)
         {
             isHostAtNear = EAT_TRUE;
+            set_vibration_state(EAT_FALSE);
             telecontrol_switch_on();
             audio_bluetoothFoundSound();
         }

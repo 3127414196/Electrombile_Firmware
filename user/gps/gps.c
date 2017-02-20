@@ -109,6 +109,41 @@ static eat_bool gps_DuplicateCheck(LOCAL_GPS *pre_gps, LOCAL_GPS *gps)
     }
 }
 
+static void gps_at_read_handler(void)
+{
+#define READ_BUFF_SIZE 2048
+    unsigned char *buf_p1 = NULL;
+    unsigned char *buf_p2 = NULL;
+    unsigned char  buf[READ_BUFF_SIZE] = {0};
+
+    unsigned int len = 0;
+
+    len = eat_modem_read(buf, READ_BUFF_SIZE);
+    LOG_DEBUG("modem read, len=%d, buf=\r\n%s", len, buf);
+
+    buf_p1 = string_bypass(buf, "AT+CGNSPWR=1\r\r\n");
+    if(NULL != buf_p1)
+    {
+        buf_p2 = (unsigned char*)strstr(buf_p1, "OK");
+        if(buf_p1 == buf_p2)
+        {
+            LOG_DEBUG("turn on gps power OK.");
+        }
+    }
+
+    buf_p1 = string_bypass(buf, "AT+CENG=3,1\r\r\n");
+    if(NULL != buf_p1)
+    {
+        buf_p2 = (unsigned char*)strstr(buf_p1, "OK");
+        if(buf_p1 == buf_p2)
+        {
+            LOG_DEBUG("turn on cells OK.");
+        }
+    }
+
+    return;
+}
+
 static eat_bool gps_saveGps(void)
 {
     LOCAL_GPS gps;
@@ -447,7 +482,8 @@ void app_gps_thread(void *data)
                 break;
 
             case EAT_EVENT_MDM_READY_RD:
-                LOG_DEBUG("EAT_EVENT_MDM_READY_RD happen");
+                gps_at_read_handler();
+                LOG_DEBUG("gps at modem ready happen");
                 break;
 
             case EAT_EVENT_USER_MSG:

@@ -20,6 +20,7 @@ enum CMD
     CMD_THREAD_LOCATION,
     CMD_THREAD_AUTOLOCK,
     CMD_THREAD_PUTEND,
+    CMD_THREAD_DEVICE_LOCATION,
     CMD_THREAD_BLUETOOTHRESET,
 };
 
@@ -96,7 +97,10 @@ typedef struct
     char fileName[];
 }__attribute__((__packed__))FTP_PUTFILE_INFO;
 
-
+typedef struct
+{
+    char seq;
+}__attribute__((__packed__))DEVICE_LOCATION_SEQ;
 
 
 #define allocMsg(len) eat_mem_alloc(len)

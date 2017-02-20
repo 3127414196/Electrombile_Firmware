@@ -198,7 +198,27 @@ static int device_GetDeviceInfo(const void* req, cJSON *param)
 
 static int device_GetLocation(const void* req, cJSON *param)
 {
-    //TODO SEND DEVICE INFO MSG TO SERVER
+    DEVICE_LOCATION_SEQ *seq = NULL;
+    u8 msgLen = sizeof(MSG_THREAD) + sizeof(DEVICE_LOCATION_SEQ);
+
+    MSG_THREAD* msg = allocMsg(msgLen);
+    if(msg)
+    {
+        seq = (DEVICE_LOCATION_SEQ *)msg->data;
+
+        msg->cmd = CMD_THREAD_DEVICE_LOCATION;
+        msg->length = sizeof(DEVICE_LOCATION_SEQ);
+
+        seq->seq = ((MSG_DEVICE_REQ *)req)->header.seq;
+
+        LOG_DEBUG("send CMD_THREAD_DEVICE_LOCATION to THREAD_GPS.");
+        sendMsg(THREAD_GPS, msg, msgLen);
+    }
+    else
+    {
+        device_responseERROR(req);
+    }
+
     return 0;
 }
 
@@ -556,6 +576,83 @@ static int device_ControlCarLocked(const void* req, cJSON *param)
     return device_responseOK(req);
 }
 
+int device_sendGPS(const MSG_THREAD* msg)
+{
+    int msgLen = 0;
+    char *buffer = NULL;
+    MSG_DEVICE_REQ req = {0};
+
+    cJSON *gps = NULL;
+    cJSON *result = NULL;
+    cJSON *json_root = NULL;
+    MSG_DEVICE_RSP *rsp = NULL;
+
+    LOCAL_GPS* last_gps = gps_get_last();
+    DEVICE_LOCATION_SEQ *seq = (DEVICE_LOCATION_SEQ *)msg->data;
+
+    req.header.seq = seq->seq;
+    req.header.signature = htons(START_FLAG);
+    req.header.length = 0;
+    req.header.cmd = CMD_DEVICE;
+
+    gps = cJSON_CreateObject();
+    if(!gps)
+    {
+        device_responseERROR(&req);
+        return EAT_FALSE;
+    }
+
+    result = cJSON_CreateObject();
+    if(!result)
+    {
+        cJSON_Delete(gps);
+        device_responseERROR(&req);
+        return EAT_FALSE;
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(gps);
+        cJSON_Delete(result);
+        cJSON_Delete(json_root);
+        device_responseERROR(&req);
+        return EAT_FALSE;
+    }
+
+    cJSON_AddNumberToObject(gps, "timestamp", rtc_getTimestamp());
+    cJSON_AddNumberToObject(gps, "lat", last_gps->gps.latitude);
+    cJSON_AddNumberToObject(gps, "lng", last_gps->gps.longitude);
+    cJSON_AddNumberToObject(gps, "speed", last_gps->gps.speed);
+    cJSON_AddNumberToObject(gps, "course", last_gps->gps.course);
+    cJSON_AddItemToObject(result, "gps", gps);
+
+    cJSON_AddItemToObject(json_root, "result", result);
+
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(&req);
+        return EAT_FALSE;
+    }
+    cJSON_Delete(json_root);
+
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)&req, msgLen);
+    if(!rsp)
+    {
+        device_responseERROR(&req);
+        return EAT_FALSE;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
+}
+
+
 static DEVICE_MSG_PROC deviceProcs[] =
 {
     {DEVICE_GET_DEVICEINFO,    device_GetDeviceInfo},
@@ -623,3 +720,4 @@ int cmd_device_handler(const void* msg)
     LOG_ERROR("unknown device type %d!", cmd);
     return -1;
 }
+

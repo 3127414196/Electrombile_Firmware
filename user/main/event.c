@@ -280,6 +280,11 @@ static int threadCmd_Alarm(const MSG_THREAD* msg)
     return cmd_alarm(msg_data->alarm_type);
 }
 
+static int threadCmd_deviceGPS(const MSG_THREAD* msg)
+{
+    return device_sendGPS(msg);
+}
+
 static int threadCmd_PutEnd(const MSG_THREAD* msg)
 {
     FTP_PUTFILE_INFO *msg_data = (FTP_PUTFILE_INFO *)msg->data;
@@ -424,6 +429,7 @@ static THREAD_MSG_PROC msgProcs[] =
         {CMD_THREAD_AUTOLOCK, threadCmd_AutolockState},
         {CMD_THREAD_GPSHDOP, threadCmd_GPSHdop},
         {CMD_THREAD_PUTEND, threadCmd_PutEnd},
+        {CMD_THREAD_DEVICE_LOCATION, threadCmd_deviceGPS}
 };
 
 static int event_threadMsg(const EatEvent_st* event)
@@ -478,7 +484,7 @@ static EVENT_PROC eventProcs[] =
     {EAT_EVENT_UART_SEND_COMPLETE,  EAT_NULL},
     {EAT_EVENT_USER_MSG,            event_threadMsg},
     {EAT_EVENT_ADC,                 event_adc},
-    {EAT_EVENT_AUD_PLAY_FINISH_IND, event_aud_play_finish}
+    {EAT_EVENT_AUD_PLAY_FINISH_IND, event_aud_play_finish},
 };
 
 

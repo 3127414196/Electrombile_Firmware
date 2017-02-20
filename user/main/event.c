@@ -31,6 +31,7 @@
 #include "audio_source.h"
 #include "seek.h"
 #include "record.h"
+#include "device.h"
 
 typedef int (*EVENT_FUNC)(const EatEvent_st* event);
 typedef struct

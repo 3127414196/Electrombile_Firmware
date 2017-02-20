@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <eat_interface.h>
 #include <eat_fs.h>
@@ -599,7 +600,7 @@ int device_sendGPS(const MSG_THREAD* msg)
     if(!gps)
     {
         device_responseERROR(&req);
-        return EAT_FALSE;
+        return -1;
     }
 
     result = cJSON_CreateObject();
@@ -607,7 +608,7 @@ int device_sendGPS(const MSG_THREAD* msg)
     {
         cJSON_Delete(gps);
         device_responseERROR(&req);
-        return EAT_FALSE;
+        return -1;
     }
 
     json_root = cJSON_CreateObject();
@@ -617,7 +618,7 @@ int device_sendGPS(const MSG_THREAD* msg)
         cJSON_Delete(result);
         cJSON_Delete(json_root);
         device_responseERROR(&req);
-        return EAT_FALSE;
+        return -1;
     }
 
     cJSON_AddNumberToObject(gps, "timestamp", rtc_getTimestamp());
@@ -634,7 +635,7 @@ int device_sendGPS(const MSG_THREAD* msg)
     {
         cJSON_Delete(json_root);
         device_responseERROR(&req);
-        return EAT_FALSE;
+        return -1;
     }
     cJSON_Delete(json_root);
 
@@ -643,13 +644,15 @@ int device_sendGPS(const MSG_THREAD* msg)
     if(!rsp)
     {
         device_responseERROR(&req);
-        return EAT_FALSE;
+        return -1;
     }
 
     strncpy(rsp->data, buffer, strlen(buffer));
     free(buffer);
 
     socket_sendDataDirectly(rsp, msgLen);
+
+    return 0;
 }
 
 

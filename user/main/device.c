@@ -204,17 +204,29 @@ static int device_GetLocation(const void* req, cJSON *param)
 
 static int device_SetAutolock(const void* req, cJSON *param)
 {
+    cJSON *sw = NULL;
+    cJSON *period = NULL;
+
     if(!param)
     {
         device_responseERROR(req);
         return EAT_FALSE;
     }
-    setting.isAutodefendFixed = cJSON_GetObjectItem(param, "sw")->valueint ? EAT_TRUE : EAT_FALSE;
-    setting.autodefendPeriod = cJSON_GetObjectItem(param, "period")->valueint;
 
-    setting_save();
+    sw = cJSON_GetObjectItem(param, "sw");
+    period = cJSON_GetObjectItem(param, "period");
+    if(sw && period)
+    {
+        setting.isAutodefendFixed = sw->valueint ? EAT_TRUE : EAT_FALSE;
+        setting.autodefendPeriod = period->valueint;
+        setting_save();
+        device_responseOK(req);
+    }
+    else
+    {
+        device_responseERROR(req);
+    }
 
-    device_responseOK(req);
     return 0;
 }
 
@@ -275,16 +287,25 @@ static int device_GetAutolock(const void* req, cJSON *param)
 
 static int device_SetDeffend(const void* req, cJSON *param)
 {
+    cJSON *defend = NULL;
+
     if(!param)
     {
         device_responseERROR(req);
         return EAT_FALSE;
     }
 
-    setting.isVibrateFixed = cJSON_GetObjectItem(param, "defend")->valueint ? EAT_TRUE : EAT_FALSE;
-    setting_save();
+    defend = cJSON_GetObjectItem(param, "defend");
+    if(defend)
+    {
+        set_vibration_state(defend->valueint ? EAT_TRUE : EAT_FALSE);
+        device_responseOK(req);
+    }
+    else
+    {
+        device_responseERROR(req);
+    }
 
-    device_responseOK(req);
     return 0;
 }
 
@@ -398,15 +419,25 @@ static int device_GetBattery(const void* req, cJSON *param)
 
 static int device_SetBatteryType(const void* req, cJSON *param)
 {
+    cJSON *batterytype = NULL;
+
     if(!param)
     {
         device_responseERROR(req);
         return EAT_FALSE;
     }
 
-    set_battery_type(cJSON_GetObjectItem(param, "batterytype")->valueint);
+    batterytype = cJSON_GetObjectItem(param, "batterytype");
+    if(batterytype)
+    {
+        set_battery_type(batterytype->valueint);
+        device_responseOK(req);
+    }
+    else
+    {
+        device_responseERROR(req);
+    }
 
-    device_responseOK(req);
     return 0;
 }
 

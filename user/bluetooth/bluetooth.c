@@ -169,10 +169,3 @@ void app_bluetooth_thread(void *data)
     }
 }
 
-
-
-
-
-
-
-

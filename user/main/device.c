@@ -19,6 +19,7 @@
 #include "msg.h"
 #include "log.h"
 #include "uart.h"
+#include "data.h"
 #include "setting.h"
 #include "thread.h"
 #include "thread_msg.h"
@@ -93,9 +94,108 @@ static int device_responseERROR(const void* req)
 
 static int device_GetDeviceInfo(const void* req, cJSON *param)
 {
-    //TODO SEND DEVICE INFO MSG TO SERVER
+    cJSON *autolock = NULL;
+    cJSON *battery= NULL;
+    cJSON *gps = NULL;
+    cJSON *root = NULL;
+    cJSON *json_root = NULL;
+
+    char *buffer = NULL;
+    MSG_DEVICE_RSP *rsp = NULL;
+    int msgLen = 0;
+    LOCAL_GPS* last_gps = gps_get_last();
+
+    autolock = cJSON_CreateObject();
+    if(!autolock)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    battery = cJSON_CreateObject();
+    if(!battery)
+    {
+        cJSON_Delete(autolock);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    gps = cJSON_CreateObject();
+    if(!gps)
+    {
+        cJSON_Delete(autolock);
+        cJSON_Delete(battery);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    root = cJSON_CreateObject();
+    if(!root)
+    {
+        cJSON_Delete(autolock);
+        cJSON_Delete(battery);
+        cJSON_Delete(gps);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(autolock);
+        cJSON_Delete(battery);
+        cJSON_Delete(gps);
+        cJSON_Delete(json_root);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_AddNumberToObject(json_root, "code", 0);
+
+    cJSON_AddNumberToObject(autolock, "sw", setting.isAutodefendFixed);
+    cJSON_AddNumberToObject(autolock, "period", setting.autodefendPeriod);
+    cJSON_AddItemToObject(root, "autolock", autolock);
+
+    cJSON_AddNumberToObject(battery, "percent", battery_getPercent());
+    cJSON_AddNumberToObject(battery, "type", setting.BatteryType);
+    cJSON_AddItemToObject(root, "battery", battery);
+
+    cJSON_AddNumberToObject(root, "defend", setting.isVibrateFixed);
+
+    cJSON_AddNumberToObject(gps, "timestamp", rtc_getTimestamp());
+    cJSON_AddNumberToObject(gps, "lat", last_gps->gps.latitude);
+    cJSON_AddNumberToObject(gps, "lng", last_gps->gps.longitude);
+    cJSON_AddNumberToObject(gps, "speed", last_gps->gps.speed);
+    cJSON_AddNumberToObject(gps, "course", last_gps->gps.course);
+    cJSON_AddItemToObject(root, "gps", gps);
+
+    cJSON_AddItemToObject(json_root, "result", root);
+
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_Delete(json_root);
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)req, msgLen);
+
+    if(!rsp)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
     return 0;
 }
+
 static int device_GetLocation(const void* req, cJSON *param)
 {
     //TODO SEND DEVICE INFO MSG TO SERVER
@@ -104,37 +204,209 @@ static int device_GetLocation(const void* req, cJSON *param)
 
 static int device_SetAutolock(const void* req, cJSON *param)
 {
-    //TODO SEND DEVICE INFO MSG TO SERVER
+    if(!param)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+    setting.isAutodefendFixed = cJSON_GetObjectItem(param, "sw")->valueint ? EAT_TRUE : EAT_FALSE;
+    setting.autodefendPeriod = cJSON_GetObjectItem(param, "period")->valueint;
+
+    setting_save();
+
+    device_responseOK(req);
     return 0;
 }
 
 static int device_GetAutolock(const void* req, cJSON *param)
 {
-    //TODO SEND DEVICE INFO MSG TO SERVER
+    cJSON *result = NULL;
+    cJSON *json_root = NULL;
+
+    char *buffer = NULL;
+    int msgLen = 0;
+    MSG_DEVICE_RSP *rsp = NULL;
+
+    result = cJSON_CreateObject();
+    if(!result)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(result);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_AddNumberToObject(json_root, "code", 0);
+
+    cJSON_AddNumberToObject(result, "sw", setting.isAutodefendFixed);
+    cJSON_AddNumberToObject(result, "period", setting.autodefendPeriod);
+    cJSON_AddItemToObject(json_root, "result", result);
+
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_Delete(json_root);
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)req, msgLen);
+
+    if(!rsp)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
     return 0;
 }
 
 static int device_SetDeffend(const void* req, cJSON *param)
 {
-    //TODO SEND DEVICE INFO MSG TO SERVER
+    if(!param)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    setting.isVibrateFixed = cJSON_GetObjectItem(param, "defend")->valueint ? EAT_TRUE : EAT_FALSE;
+    setting_save();
+
+    device_responseOK(req);
     return 0;
 }
 
 static int device_GetDeffend(const void* req, cJSON *param)
 {
-    //TODO SEND DEVICE INFO MSG TO SERVER
+    cJSON *result = NULL;
+    cJSON *json_root = NULL;
+
+    char *buffer = NULL;
+    int msgLen = 0;
+    MSG_DEVICE_RSP *rsp = NULL;
+
+    result = cJSON_CreateObject();
+    if(!result)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(result);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_AddNumberToObject(json_root, "code", 0);
+
+    cJSON_AddNumberToObject(result, "defend", setting.isVibrateFixed);
+    cJSON_AddItemToObject(json_root, "result", result);
+
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_Delete(json_root);
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)req, msgLen);
+
+    if(!rsp)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
     return 0;
 }
 
 static int device_GetBattery(const void* req, cJSON *param)
 {
-    //TODO SEND DEVICE INFO MSG TO SERVER
+    cJSON *result = NULL;
+    cJSON *json_root = NULL;
+
+    char *buffer = NULL;
+    int msgLen = 0;
+    MSG_DEVICE_RSP *rsp = NULL;
+
+    result = cJSON_CreateObject();
+    if(!result)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(result);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_AddNumberToObject(json_root, "code", 0);
+
+    cJSON_AddNumberToObject(result, "percent", battery_getPercent());
+    cJSON_AddItemToObject(json_root, "result", result);
+
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_Delete(json_root);
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)req, msgLen);
+
+    if(!rsp)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
     return 0;
 }
 
 static int device_SetBatteryType(const void* req, cJSON *param)
 {
-    //TODO SEND DEVICE INFO MSG TO SERVER
+    if(!param)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    set_battery_type(cJSON_GetObjectItem(param, "batterytype")->valueint);
+
+    device_responseOK(req);
     return 0;
 }
 

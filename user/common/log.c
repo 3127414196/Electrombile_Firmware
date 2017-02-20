@@ -169,40 +169,9 @@ int cmd_catlog(const unsigned char* cmdString, unsigned short length)
     return log_catlog();
 }
 
-
-//int cmd_deletelog(const unsigned char* cmdString, unsigned short length)
-//{
-//    eat_fs_error_enum fs_Op_ret;
-//
-//    fs_Op_ret = (eat_fs_error_enum)eat_fs_Delete(OLD_LOG_FILE);
-//    if(EAT_FS_NO_ERROR != fs_Op_ret && EAT_FS_FILE_NOT_FOUND != fs_Op_ret)
-//    {
-//        LOG_ERROR("Delete old log file Fail,and Return Error is %d",fs_Op_ret);
-//        return EAT_FALSE;
-//    }
-//    else
-//    {
-//        LOG_DEBUG("Delete old log file Success");
-//    }
-//
-//    fs_Op_ret = (eat_fs_error_enum)eat_fs_Delete(NEW_LOG_FILE);
-//    if(EAT_FS_NO_ERROR != fs_Op_ret && EAT_FS_FILE_NOT_FOUND != fs_Op_ret)
-//    {
-//        LOG_ERROR("Delete new log file Fail,and Return Error is %d",fs_Op_ret);
-//        return EAT_FALSE;
-//    }
-//    else
-//    {
-//        LOG_DEBUG("Delete new log file Success");
-//    }
-//
-//    return EAT_TRUE;
-//}
-
 void log_initial(void)
 {
     regist_cmd("catlog", cmd_catlog);
-//    regist_cmd("deletelog", cmd_deletelog);
 }
 
 /*

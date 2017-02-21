@@ -386,10 +386,10 @@ static int cmd_get_AT(char *data)
 
 static int event_mod_ready_rd(const EatEvent_st* event)
 {
-	u8 buf[256] = {0};
+	u8 buf[READ_BUFF_SIZE] = {0};
 	u16 len = 0;
 
-	len = eat_modem_read(buf, 256);
+	len = eat_modem_read(buf, READ_BUFF_SIZE);
 	if (!len)
 	{
 	    LOG_ERROR("modem received nothing.");

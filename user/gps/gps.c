@@ -111,7 +111,6 @@ static eat_bool gps_DuplicateCheck(LOCAL_GPS *pre_gps, LOCAL_GPS *gps)
 
 static void gps_at_read_handler(void)
 {
-#define READ_BUFF_SIZE 2048
     unsigned char *buf_p1 = NULL;
     unsigned char *buf_p2 = NULL;
     unsigned char  buf[READ_BUFF_SIZE] = {0};
@@ -451,7 +450,7 @@ void app_gps_thread(void *data)
     eat_gps_power_req(EAT_TRUE);    //turn on GNSS power supply, equal to AT+CGNSPWR=1
     LOG_INFO("gps sleep mode %d", eat_gps_sleep_read());
 
-    modem_switchEngineeringMode(3, 1);  //set cell on, AT+CENG=3,1\r
+    //modem_switchEngineeringMode(3, 1);  //set cell on, AT+CENG=3,1\r
 
     eat_timer_start(TIMER_GPS, TIMER_GPS_PERIOD);
 

@@ -53,9 +53,9 @@ static int bluetooth_checkId(u8* buf)
 
 static void bluetooth_mod_ready_rd(void)
 {
-    u8 buf[256] = {0};
+    u8 buf[READ_BUFF_SIZE] = {0};
 
-    if (eat_modem_read(buf, 256))
+    if (eat_modem_read(buf, READ_BUFF_SIZE))
     {
         LOG_DEBUG("modem recv: %s", buf);
 

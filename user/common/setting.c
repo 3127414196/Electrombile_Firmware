@@ -131,7 +131,7 @@ static void setting_initial(void)
     regist_cmd(CMD_STRING_SERVER, setting_changeServer);//register the debug command
 
     /* Server configuration */
-#if 0
+#if 1
     setting.addr_type = ADDR_TYPE_DOMAIN;
     strncpy(setting.domain, "www.xiaoan110.com",MAX_DOMAIN_NAME_LEN);
 #else
@@ -142,7 +142,7 @@ static void setting_initial(void)
     setting.ipaddr[3] = 130;
 #endif
 
-    strncpy(setting.ftp_domain, "test.xiaoan110.com", MAX_DOMAIN_NAME_LEN);
+    strncpy(setting.ftp_domain, "www.xiaoan110.com", MAX_DOMAIN_NAME_LEN);
     setting.port = 9880;
 
     /* Timer configuration */
@@ -167,7 +167,7 @@ static void setting_initial(void)
     setting.isBatteryJudging = EAT_FALSE;
 
     setting.BluetoothSwitch = EAT_TRUE;
-    strncpy(setting.BluetoothId, "10:2a:b3:73:2b:b8", BLUETOOTH_ID_LEN);
+    strncpy(setting.BluetoothId, "00.00.00.00.00.00", BLUETOOTH_ID_LEN);
 
     return;
 }

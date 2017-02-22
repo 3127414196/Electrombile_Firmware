@@ -30,7 +30,6 @@
 #include "telecontrol.h"
 #include "bluetooth.h"
 #include "led.h"
-#include "modem.h"
 
 /********************************************************************
  * Macros
@@ -156,8 +155,6 @@ void app_main(void *data)
     fs_initial();
 
     startWatchdog();
-
-    modem_AT("AT+BTPOWER=1" CR);
 
     bluetooth_startLoop();
 

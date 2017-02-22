@@ -167,7 +167,7 @@ static void setting_initial(void)
     setting.isBatteryJudging = EAT_FALSE;
 
     setting.BluetoothSwitch = EAT_TRUE;
-    strncpy(setting.BluetoothId, "00.00.00.00.00.00", BLUETOOTH_ID_LEN);
+    strncpy(setting.BluetoothId, "00:00:00:00:00:00", BLUETOOTH_ID_LEN);
 
     return;
 }

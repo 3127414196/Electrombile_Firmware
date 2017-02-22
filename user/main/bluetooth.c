@@ -81,6 +81,7 @@ static void bluetooth_ScanProc(int time)
 
 void bluetooth_startLoop(void)
 {
+    modem_AT("AT+BTPOWER=1" CR);
     eat_timer_start(TIMER_BLUETOOTH, setting.bluetooth_timer_period);
 }
 

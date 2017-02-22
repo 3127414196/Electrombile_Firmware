@@ -319,7 +319,16 @@ static int device_SetDeffend(const void* req, cJSON *param)
     defend = cJSON_GetObjectItem(param, "defend");
     if(defend)
     {
-        set_vibration_state(defend->valueint ? EAT_TRUE : EAT_FALSE);
+        if(defend->valueint)
+        {
+            set_vibration_state(EAT_TRUE);
+            telecontrol_switch_off();
+        }
+        else
+        {
+            set_vibration_state(EAT_FALSE);
+            telecontrol_switch_on();
+        }
         device_responseOK(req);
     }
     else

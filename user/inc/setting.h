@@ -41,6 +41,7 @@ typedef struct
         u32 seek_timer_period;
         u32 timeupdate_timer_peroid;
         u32 gps_send_period;
+        u32 bluetooth_timer_period;
     };
 
     //Switch configuration

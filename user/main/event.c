@@ -100,6 +100,11 @@ static int event_timer(const EatEvent_st* event)
             eat_timer_start(event->data.timer.timer_id, 60*1000);
             break;
 
+        case TIMER_BLUETOOTH:
+            bluetooth_onesecondLoop();
+            eat_timer_start(event->data.timer.timer_id, setting.bluetooth_timer_period);
+            break;
+
         default:
             LOG_ERROR ("timer(%d) not processed!", event->data.timer.timer_id);
             break;
@@ -415,7 +420,10 @@ static int event_mod_ready_rd(const EatEvent_st* event)
     }
 
     ftp_modem_run(buf);
+
     record_modem_run(buf);
+
+    bluetooth_check_run(buf);
 
 	return 0;
 }
@@ -493,7 +501,7 @@ int event_proc(EatEvent_st* event)
 {
     int i = 0;
 
-    LOG_DEBUG("event: %s happened", getEventDescription(event->event));
+    //LOG_DEBUG("event: %s happened", getEventDescription(event->event));
 
     for (i = 0; i < sizeof(eventProcs) / sizeof(eventProcs[0]); i++)
     {

@@ -151,6 +151,7 @@ static void setting_initial(void)
     setting.seek_timer_period = 2000;
     setting.timeupdate_timer_peroid = 24 * 60 * 60 * 1000;      //24h * 60m * 60s * 1000ms
     setting.gps_send_period = 30 * 1000;
+    setting.bluetooth_timer_period = 1 * 1000;
 
     /* Switch configuration */
     setting.isVibrateFixed = EAT_FALSE;
@@ -166,7 +167,7 @@ static void setting_initial(void)
     setting.isBatteryJudging = EAT_FALSE;
 
     setting.BluetoothSwitch = EAT_TRUE;
-    strncpy(setting.BluetoothId, "00:00:00:00:00:00", BLUETOOTH_ID_LEN);
+    strncpy(setting.BluetoothId, "10:2a:b3:73:2b:b8", BLUETOOTH_ID_LEN);
 
     return;
 }

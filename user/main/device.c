@@ -488,28 +488,25 @@ static int device_StopRecord(const void* req, cJSON *param)
 static int device_SetBluetoothId(const void* req, cJSON *param)
 {
     cJSON *bluetoothId = NULL;
-    u8 msgLen = sizeof(MSG_THREAD);
-    MSG_THREAD *msg = NULL;
-
-    msg = allocMsg(msgLen);
-    if(!msg)
-    {
-        return device_responseERROR(req);
-    }
-
-    msg->cmd = CMD_THREAD_BLUETOOTHRESET;
-    msg->length = 0;
 
     if(!param)
     {
         return device_responseERROR(req);
     }
+
     bluetoothId = cJSON_GetObjectItem(param, "bluetoothId");
-    set_bluetooth_id(bluetoothId->valuestring);
+    if(bluetoothId)
+    {
+        set_bluetooth_id(bluetoothId->valuestring);
+        bluetooth_resetState();
+        device_responseOK(req);
+    }
+    else
+    {
+        device_responseERROR(req);
+    }
 
-    sendMsg(THREAD_BLUETOOTH, msg, msgLen);
-
-    return device_responseOK(req);
+    return 0;
 }
 
 static int device_DownloadAudioFile(const void* req, cJSON *param)

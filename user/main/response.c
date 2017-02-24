@@ -66,6 +66,15 @@ int cmd_Alarm_rsp(const void* msg)
     return 0;
 }
 
+int cmd_PutEnd_rsp(const void* msg)
+{
+    LOG_DEBUG("get put end respond");
+
+    msg_ack(msg);
+
+    return 0;
+}
+
 int cmd_Sms_rsp(const void* msg)
 {
     return 0;
@@ -436,7 +445,6 @@ int cmd_GetAT_rsp(const void* msg)
 
     return 0;
 }
-
 
 int cmd_DefendOn_rsp(const void* msg)
 {

@@ -20,15 +20,11 @@
 #define MODEM_READ_CMD  "?"
 #define MODEM_WRITE_CMD "="
 
-#define CR  "\r"    //CR (carriage return)
-#define LF  "\n"    //LF (line feed - new line)
-
 
 #define AT_CGATT    "AT+CGATT"
 #define AT_CENG     "AT+CENG"
 #define AT_CGNSINF  "AT+CGNSINF"
 #define AT_CCID     "AT+CCID"
-
 
 static eat_bool modem_cmd(const unsigned char *cmd)
 {
@@ -145,14 +141,12 @@ eat_bool modem_readCellInfo(void)
 {
     unsigned char* cmd = AT_CENG MODEM_READ_CMD CR;
 
-
     return modem_cmd(cmd);
 }
 
 eat_bool modem_readCCIDInfo(void)
 {
     unsigned char* cmd = AT_CCID CR;
-
 
     return modem_cmd(cmd);
 }

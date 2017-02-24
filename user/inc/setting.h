@@ -30,6 +30,7 @@ typedef struct
 		u8 ipaddr[4];
 	};
 	u16 port;
+    char ftp_domain[MAX_DOMAIN_NAME_LEN];
 
 	//Timer configuration
     struct

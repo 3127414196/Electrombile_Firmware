@@ -7,7 +7,7 @@
 
 #ifndef USER_INC_MODEM_H_
 #define USER_INC_MODEM_H_
-
+#include <eat_type.h>
 
 eat_bool modem_IsCallReady(char* modem_rsp);
 
@@ -29,6 +29,7 @@ eat_bool modem_GNSS(void);
 
 eat_bool modem_AT(unsigned char *cmd);
 
-
+#define CR  "\r"    //CR (carriage return)
+#define LF  "\n"    //LF (line feed - new line)
 
 #endif /* USER_INC_MODEM_H_ */

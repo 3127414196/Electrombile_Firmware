@@ -18,6 +18,7 @@ int cmd_GPS(GPS* gps);
 
 int cmd_GPSPack(void);
 int cmd_alarm(char alarm_type);
+int cmd_PutEnd(char code, char *fileName);
 
 
 

@@ -26,6 +26,21 @@ void* alloc_msg(char cmd, size_t length)
     return msg;
 }
 
+void* alloc_device_msg(const MSG_HEADER* pMsg, size_t length)
+{
+    MSG_HEADER* msg = eat_mem_alloc(length);
+
+    if (msg)
+    {
+        msg->signature = htons(START_FLAG);
+        msg->cmd = pMsg->cmd;
+        msg->seq = pMsg->seq;
+        msg->length = htons(length - MSG_HEADER_LEN);
+    }
+
+    return msg;
+}
+
 void* alloc_rspMsg(const MSG_HEADER* pMsg)
 {
     MSG_HEADER* msg = NULL;

@@ -19,6 +19,7 @@ enum CMD
     CMD_THREAD_ALARM,
     CMD_THREAD_LOCATION,
     CMD_THREAD_AUTOLOCK,
+    CMD_THREAD_PUTEND,
 };
 
 
@@ -87,6 +88,13 @@ typedef struct
     char smsLen;
     char content[];
 }__attribute__((__packed__))SMS_SEND_INFO;
+
+typedef struct
+{
+    char code;
+    char fileName[];
+}__attribute__((__packed__))FTP_PUTFILE_INFO;
+
 
 
 #define allocMsg(len) eat_mem_alloc(len)

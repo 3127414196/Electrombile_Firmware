@@ -44,9 +44,11 @@ void string_trimRight(unsigned char* string)
 {
     unsigned char* p = string + strlen((const char *)string) - 1;
 
-    while(*p == ' ' || *p == '\r' || *p == '\n' || *p == '\t') p--;
-
-    *(p + 1) = 0;
+    while(*p == ' ' || *p == '\r' || *p == '\n' || *p == '\t')
+    {
+        *p = 0;
+        p--;
+    }
 
     return;
 }

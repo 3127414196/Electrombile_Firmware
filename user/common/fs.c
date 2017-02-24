@@ -35,9 +35,25 @@ static int fs_ls(const unsigned char* cmdString, unsigned short length)
     char filename[MAX_FILENAME_LEN];
     SINT64 size = 0;
     int rc = 0;
+    const unsigned char *directory;
+    WCHAR directory_w[MAX_FILENAME_LEN] = {0};
 
+    directory = string_bypass(cmdString, "ls");
+    directory = string_trimLeft(directory);
+    string_trimRight((unsigned char*)directory);
 
-    fh = eat_fs_FindFirst(L"C:\\*.*", 0, 0, &fileinfo, filename_w, sizeof(filename_w));
+    if(0 < strlen(directory))
+    {
+        strcat((unsigned char*)directory,"\\*.*");
+        ascii2unicode(directory_w,directory);
+        fh = eat_fs_FindFirst(directory_w, 0, 0, &fileinfo, filename_w, sizeof(filename_w));
+    }
+    else
+    {
+
+        fh = eat_fs_FindFirst(L"C:\\*.*", 0, 0, &fileinfo, filename_w, sizeof(filename_w));
+    }
+
 
     if (fh > 0)
     {
@@ -240,55 +256,34 @@ SINT64 fs_getDiskFreeSize(void)
     return size;
 }
 
-int fs_factory(void)
+
+int fs_delete_file(const WCHAR * FileName)
 {
-    int rc = 0;
-    int result = 0;
-
-    rc = eat_fs_Delete(SETTINGFILE_NAME);
+    int result = 0, rc = 0;
+    u8 filename[32] = {0};
+    unicode2ascii(filename, FileName);
+    rc = eat_fs_Delete(FileName);
     if (rc == EAT_FS_FILE_NOT_FOUND || rc >= EAT_FS_NO_ERROR)
     {
-        LOG_DEBUG("delete setting file ok");
+        LOG_DEBUG("delete %s file ok", filename);
     }
     else
     {
-        LOG_DEBUG("delete setting file error: %d",rc);
+        LOG_DEBUG("delete %s file error: %d",filename, rc);
         result = -1;
     }
-
-    rc = eat_fs_Delete(LOG_FILE_BAK);
-    if (rc == EAT_FS_FILE_NOT_FOUND || rc >= EAT_FS_NO_ERROR)
-    {
-        LOG_DEBUG("delete log.old file ok");
-    }
-    else
-    {
-        LOG_DEBUG("delete log.old file error: %d",rc);
-        result = -1;
-    }
-
-    rc = eat_fs_Delete(LOG_FILE_NAME);
-    if (rc == EAT_FS_FILE_NOT_FOUND || rc >= EAT_FS_NO_ERROR)
-    {
-        LOG_DEBUG("delete log.txt file ok");
-    }
-    else
-    {
-        LOG_DEBUG("delete log.txt file error: %d",rc);
-        result = -1;
-    }
-
-    rc = eat_fs_Delete(ITINERARYFILE_NAME);
-    if (rc == EAT_FS_FILE_NOT_FOUND || rc >= EAT_FS_NO_ERROR)
-    {
-        LOG_DEBUG("delete itinerary file ok");
-    }
-    else
-    {
-        LOG_DEBUG("delete itinerary file error: %d",rc);
-        result = -1;
-    }
-
     return result;
 }
+
+int fs_factory(void)
+{
+    int result = 0;
+    if(0 != fs_delete_file(SETTINGFILE_NAME)){result = -1;}
+    if(0 != fs_delete_file(LOG_FILE_BAK)){result = -1;}
+    if(0 != fs_delete_file(LOG_FILE_NAME)){result = -1;}
+    if(0 != fs_delete_file(UPGRADE_FILE_NAME)){result = -1;}
+    if(0 != fs_delete_file(RECORDE_FILE_NAME)){result = -1;}
+    return result;
+}
+
 

@@ -27,6 +27,7 @@
 #include "response.h"
 #include "msg_queue.h"
 #include "mem.h"
+#include "ftp.h"
 
 typedef int (*EVENT_FUNC)(const EatEvent_st* event);
 typedef struct
@@ -268,6 +269,21 @@ static int threadCmd_Alarm(const MSG_THREAD* msg)
     return cmd_alarm(msg_data->alarm_type);
 }
 
+static int threadCmd_PutEnd(const MSG_THREAD* msg)
+{
+    FTP_PUTFILE_INFO *msg_data = (FTP_PUTFILE_INFO *)msg->data;
+
+    if (msg->length < sizeof(FTP_PUTFILE_INFO))
+    {
+        LOG_ERROR("msg from THREAD_MAIN error!");
+        return -1;
+    }
+
+    LOG_INFO("code:%d, %s", msg_data->code, msg_data->fileName);
+
+    return cmd_PutEnd(msg_data->code, msg_data->fileName);
+}
+
 
 static int threadCmd_Location(const MSG_THREAD* msg)
 {
@@ -350,6 +366,7 @@ static int cmd_get_AT(char *data)
     return 0;
 }
 
+
 static int event_mod_ready_rd(const EatEvent_st* event)
 {
 	u8 buf[256] = {0};
@@ -361,7 +378,7 @@ static int event_mod_ready_rd(const EatEvent_st* event)
 	    LOG_ERROR("modem received nothing.");
 	    return -1;
 	}
-    LOG_DEBUG("modem recv: %s", buf);
+    print("modem recv: %s", buf);
     if(get_manager_ATcmd_state())
     {
         set_manager_ATcmd_state(EAT_FALSE);
@@ -380,6 +397,8 @@ static int event_mod_ready_rd(const EatEvent_st* event)
         cmd_SimInfo(buf + 9);//str(AT+CCID\r\n) = 9
     }
 
+    ftp_modem_run(buf);
+    record_modem_run(buf);
 
 	return 0;
 }
@@ -393,6 +412,7 @@ static THREAD_MSG_PROC msgProcs[] =
         {CMD_THREAD_LOCATION, threadCmd_Location},
         {CMD_THREAD_AUTOLOCK, threadCmd_AutolockState},
         {CMD_THREAD_GPSHDOP, threadCmd_GPSHdop},
+        {CMD_THREAD_PUTEND, threadCmd_PutEnd},
 };
 
 static int event_threadMsg(const EatEvent_st* event)

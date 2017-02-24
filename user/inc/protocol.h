@@ -72,6 +72,8 @@ enum
     CMD_DEVICE_INFO_GET = 28,
     CMD_GPS_PACK        = 29,
     CMD_SET_BATTERY_TYPE= 30,
+    CMD_DEVICE          = 31,
+    CMD_FTPPUT          = 32,
 };
 
 enum
@@ -617,6 +619,37 @@ typedef struct
 }__attribute__((__packed__)) MSG_SET_BATTERY_TYPE;
 
 typedef MSG_HEADER MSG_SET_BATTERY_TYPE_RSP;
+
+/*
+ * CMD_DEVICE message structure
+ */
+typedef struct
+{
+    MSG_HEADER header;
+    char data[];
+}__attribute__((__packed__)) MSG_DEVICE_REQ;
+
+typedef struct
+{
+    MSG_HEADER header;
+    char data[];
+}__attribute__((__packed__)) MSG_DEVICE_RSP;
+
+/*
+ * CMD_FTPPUTOK message structure
+ */
+typedef struct
+{
+    MSG_HEADER header;
+    char code;
+    char fileName[];
+}__attribute__((__packed__)) MSG_FTPPUT_REQ;
+
+typedef struct
+{
+    MSG_HEADER header;
+}__attribute__((__packed__)) MSG_FTPPUT_RSP;
+
 
 typedef MSG_HEADER MSG_DEBUG_REQ;
 

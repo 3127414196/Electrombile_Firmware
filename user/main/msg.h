@@ -24,6 +24,7 @@
 
 void* alloc_msg(char cmd, size_t length) __attribute__((malloc));
 void* alloc_rspMsg(const MSG_HEADER* pMsg);
+void* alloc_device_msg(const MSG_HEADER* pMsg, size_t length);
 
 
 void free_msg(void* msg);

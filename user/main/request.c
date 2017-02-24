@@ -107,6 +107,27 @@ int cmd_alarm(char alarm_type)
     return 0;
 }
 
+
+int cmd_PutEnd(char code, char *fileName)
+{
+    int msgLen = sizeof(MSG_FTPPUT_REQ) + strlen(fileName) + 1;
+    MSG_FTPPUT_REQ *msg = alloc_msg(CMD_FTPPUT, msgLen);
+    if (!msg)
+    {
+        LOG_ERROR("alloc message failed!");
+        return -1;
+    }
+
+    LOG_DEBUG("send put end message.");
+    msg->code = code;
+    strncpy(msg->fileName, fileName, strlen(fileName));
+
+    socket_sendDataWaitAck(msg, msgLen, NULL, NULL);
+
+    return 0;
+}
+
+
 int cmd_SMS(char number[], char type, char smsLen, char content[])
 {
     u8 msgLen = sizeof(MSG_SMS_REQ) + smsLen;

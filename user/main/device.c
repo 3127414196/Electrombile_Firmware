@@ -153,7 +153,12 @@ static int device_ControlCarLocked(const void* req, cJSON *param)
     }
 
     Switch = cJSON_GetObjectItem(param, "sw");
-    if(1 == Switch->valueint)
+    if(!Switch)
+    {
+        return device_responseERROR(req);
+    }
+
+    if(Switch->valueint)
     {
         telecontrol_break_off();
     }

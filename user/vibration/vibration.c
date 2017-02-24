@@ -109,6 +109,7 @@ static eat_bool vibration_alarm_cutoff(void)
 
 static eat_bool vibration_alarm_switchOpen(void)
 {
+    set_vibration_state(EAT_FALSE);// if alarm, set the vibration state as defend off
     return vibration_sendAlarm(ALARM_SWITCH_CHANGE);
 }
 

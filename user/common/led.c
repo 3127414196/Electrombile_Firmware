@@ -34,7 +34,7 @@ void LED_off(void)
     }
 }
 
-static void LED_fastBlink(void)
+static void LED_Blink(void)
 {
     static eat_bool state = EAT_TRUE;
 
@@ -49,10 +49,10 @@ static void LED_fastBlink(void)
 
 void LED_startFastBlink(void)
 {
-    eat_gpt_start(ONE_SECOND_GPT_TIME, EAT_TRUE, LED_fastBlink);
+    eat_gpt_start(ONE_SECOND_GPT_TIME / 2, EAT_TRUE, LED_Blink);
 }
 
-void LED_slowBlink(void)
+void LED_startSlowBlink(void)
 {
-
+    eat_gpt_start(2 * ONE_SECOND_GPT_TIME, EAT_TRUE, LED_Blink);
 }

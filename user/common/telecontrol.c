@@ -34,7 +34,7 @@ static void telecontrol_switch_initial(void)
 /*
 *function: 打开电机锁
 */
-static void telecontrol_break_on(void)
+void telecontrol_break_on(void)
 {
     eat_gpio_setup(EAT_PIN59_COL3, EAT_GPIO_DIR_OUTPUT, EAT_GPIO_LEVEL_HIGH);// break on
 }
@@ -42,7 +42,7 @@ static void telecontrol_break_on(void)
 /*
 *function: 关闭电机锁
 */
-static void telecontrol_break_off(void)
+void telecontrol_break_off(void)
 {
     eat_gpio_setup(EAT_PIN59_COL3, EAT_GPIO_DIR_OUTPUT, EAT_GPIO_LEVEL_LOW);// break off
 }
@@ -70,7 +70,7 @@ void telecontrol_initail(void)
 {
     telecontrol_initSwitchState();
     telecontrol_break_initial();
-    telecontrol_switch_initial();
+    //telecontrol_switch_initial();
 }
 
 /*

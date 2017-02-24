@@ -270,18 +270,6 @@ static void vibration_move_handler(void)
     return;
 }
 
-static void vibration_cutoff_handler(void)
-{
-    static EatGpioLevel_enum last_level = EAT_GPIO_LEVEL_LOW;
-
-    EatGpioLevel_enum pin_level = eat_gpio_read(EAT_PIN62_COL0);
-    if(EAT_GPIO_LEVEL_HIGH == last_level && EAT_GPIO_LEVEL_LOW == pin_level)
-    {
-        vibration_alarm_cutoff();
-    }
-    last_level = pin_level;
-}
-
 static void vibration_switchState_handler(void)
 {
     static EatGpioLevel_enum last_switchState = EAT_GPIO_LEVEL_LOW;
@@ -296,6 +284,7 @@ static void vibration_switchState_handler(void)
     }
     last_switchState = switchState;
 }
+
 void eat_gpio_int_cutoff_cb(EatInt_st *interrupt)
 {
     if(interrupt->pin == EAT_PIN9_DTR)
@@ -308,7 +297,6 @@ void eat_gpio_int_cutoff_cb(EatInt_st *interrupt)
 static void vibration_oneSecond_Loop(void)
 {
     vibration_move_handler();
-    //vibration_cutoff_handler();
     vibration_switchState_handler();
 }
 

@@ -28,6 +28,7 @@
 #include "version.h"
 #include "minilzo.h"
 #include "led.h"
+#include "telecontrol.h"
 
 /********************************************************************
  * Macros
@@ -109,8 +110,9 @@ void app_func_ext1(void *data)
     eat_uart_set_at_port(EAT_UART_USB);// UART1 is as AT PORT
 	eat_uart_set_debug(EAT_UART_1);
     eat_uart_set_debug_config(EAT_UART_DEBUG_MODE_UART, &cfg);
-    
+
     LED_on();
+    telecontrol_initail();
 }
 
 void app_main(void *data)

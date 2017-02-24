@@ -24,6 +24,7 @@
 #include "device.h"
 #include "record.h"
 #include "protocol.h"
+#include "telecontrol.h"
 
 enum
 {
@@ -37,6 +38,7 @@ enum
     DEVICE_SET_BATTERYTYPE  = 7,
     DEVICE_START_RECORD     = 8,
     DEVICE_STOP_RECORD      = 9,
+    DEVICE_CONTROL_LOCK      = 15,
 }DEVICE_CMD_NAME;
 
 typedef int (*DEVICE_PROC)(const void*, cJSON*);
@@ -49,6 +51,23 @@ typedef struct
 static int device_responseOK(const void* req)
 {
     char *buf = "{\"code\":0}";
+    int length = sizeof(MSG_DEVICE_RSP) + strlen(buf);
+
+    MSG_DEVICE_RSP *msg = alloc_device_msg(req, length);
+    if(!msg)
+    {
+        LOG_ERROR("device inner error");
+        return -1;
+    }
+    strncpy(msg->data, buf, strlen(buf));
+
+    socket_sendDataDirectly(msg, length);
+    return 0;
+}
+
+static int device_responseERROR(const void* req)
+{
+    char *buf = "{\"code\":110}";
     int length = sizeof(MSG_DEVICE_RSP) + strlen(buf);
 
     MSG_DEVICE_RSP *msg = alloc_device_msg(req, length);
@@ -124,6 +143,28 @@ static int device_StopRecord(const void* req, cJSON *param)
     return device_responseOK(req);
 }
 
+static int device_ControlCarLocked(const void* req, cJSON *param)
+{
+    cJSON *Switch = NULL;
+
+    if(!param)
+    {
+        return device_responseERROR(req);
+    }
+
+    Switch = cJSON_GetObjectItem(param, "sw");
+    if(1 == Switch->valueint)
+    {
+        telecontrol_break_off();
+    }
+    else
+    {
+        telecontrol_break_on();
+    }
+
+    return device_responseOK(req);
+}
+
 static DEVICE_MSG_PROC deviceProcs[] =
 {
     {DEVICE_GET_DEVICEINFO, device_GetDeviceInfo},
@@ -136,6 +177,7 @@ static DEVICE_MSG_PROC deviceProcs[] =
     {DEVICE_SET_BATTERYTYPE,device_SetBatteryType},
     {DEVICE_START_RECORD,   device_StartRecord},
     {DEVICE_STOP_RECORD,    device_StopRecord},
+    {DEVICE_CONTROL_LOCK,   device_ControlCarLocked}
 };
 
 int cmd_device_handler(const void* msg)

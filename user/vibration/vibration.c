@@ -311,7 +311,7 @@ void app_vibration_thread(void *data)
 	ret = mma8652_init();
 	if (!ret)
 	{
-        //LED_off();
+        LED_startFastBlink();
         LOG_ERROR("mma8652 init failed");
 	}
 	else

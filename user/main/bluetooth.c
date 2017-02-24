@@ -8,15 +8,11 @@
 #include <string.h>
 #include <eat_interface.h>
 
-#include "fs.h"
 #include "log.h"
-#include "data.h"
 #include "timer.h"
 #include "modem.h"
-#include "thread.h"
 #include "setting.h"
 #include "bluetooth.h"
-#include "thread_msg.h"
 #include "audio_source.h"
 
 #define BLUETOOTH_TIMER_PERIOD (1 * 1000) // 1s for once
@@ -62,8 +58,7 @@ static void bluetooth_ScanProc(int time)
         isBluetoothFound = EAT_FALSE;
         modem_AT("AT+BTSCAN=1,10" CR);// start scan
     }
-
-    if(time % 10 == 0)
+    else if(time % 10 == 0)
     {
         isScaning = EAT_FALSE;
         modem_AT("AT+BTSCAN=0" CR);// stop scan

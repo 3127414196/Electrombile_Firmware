@@ -994,6 +994,11 @@ static int device_GetLog(const void* req, cJSON *param)
     char buf_log[MAX_DEBUG_BUF_LEN] = {0};
 
     rc = log_GetLog(buf_log,MAX_DEBUG_BUF_LEN);
+    if(strlen(buf_log) > 220)   //256-36(other massage len)
+    {
+         LOG_DEBUG("data is to large to send");
+         buf_log[218] = '\0';
+    }
     if(MSG_SUCCESS > rc)
     {
         LOG_ERROR("get log file error");

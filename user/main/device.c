@@ -31,6 +31,9 @@
 #include "protocol.h"
 #include "telecontrol.h"
 #include "audio_source.h"
+#include "response.h"
+#include "eat_modem.h"
+#include "modem.h"
 
 enum
 {
@@ -49,6 +52,12 @@ enum
     DEVICE_SET_BLUETOOTHSW   = 13,
     DEVICE_START_ALARM       = 14,
     DEVICE_CONTROL_LOCK      = 15,
+    DEVICCE_GET_SERVER       = 16,
+    DEVICE_GET_GPS_SIGNAL    = 17,
+    DEVICE_GET_GSM_SIGNAL    = 18,
+    DEVICE_AT                = 19,
+    DEVICE_GET_LOG           = 20,
+    DEVICE_REBOOT            = 21,
 }DEVICE_CMD_NAME;
 
 typedef int (*DEVICE_PROC)(const void*, cJSON*);
@@ -655,6 +664,395 @@ int device_sendGPS(const MSG_THREAD* msg)
     return 0;
 }
 
+static int device_GetServer(const void* req, cJSON *param)
+{
+    char *buffer = NULL;
+    char server[MAX_DOMAIN_NAME_LEN] = {0};
+    MSG_DEVICE_RSP *rsp = NULL;
+    int msgLen = 0;
+
+    cJSON *result = NULL;
+    cJSON *autodefend = NULL;
+    cJSON *json_root = NULL;
+
+    result = cJSON_CreateObject();
+    if(!result)
+    {
+        device_responseERROR(req);
+        return -1;
+    }
+
+    autodefend = cJSON_CreateObject();
+    if(!autodefend)
+    {
+        device_responseERROR(req);
+        cJSON_Delete(result);
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(result);
+        cJSON_Delete(autodefend);
+        device_responseERROR(req);
+        return -1;
+    }
+
+    if(setting.addr_type == ADDR_TYPE_DOMAIN)
+    {
+        snprintf(server, MAX_DOMAIN_NAME_LEN, "%s:%d", setting.ftp_domain, setting.port);
+    }
+    else if(setting.addr_type == ADDR_TYPE_IP)
+    {
+        snprintf(server, MAX_DOMAIN_NAME_LEN, "%u.%u.%u.%u:%d", setting.ipaddr[0], setting.ipaddr[1], setting.ipaddr[2], setting.ipaddr[3], setting.port);
+    }
+
+
+    cJSON_AddNumberToObject(json_root, "code", 0);
+    cJSON_AddStringToObject(result, "server", server);
+    cJSON_AddNumberToObject(autodefend, "sw", setting.isAutodefendFixed);
+    cJSON_AddNumberToObject(autodefend, "period", setting.autodefendPeriod);
+    cJSON_AddItemToObject(result, "autodefend", autodefend);
+    cJSON_AddNumberToObject(result, "defend", setting.isVibrateFixed);
+    cJSON_AddStringToObject(result, "BTAddress", setting.BluetoothId);
+
+    cJSON_AddItemToObject(json_root, "result", result);
+
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_Delete(json_root);
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)req, msgLen);
+
+    if(!rsp)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
+    return 0;
+}
+
+static int device_GetGpsSignal(const void* req, cJSON *param)
+{
+    DEVICE_LOCATION_SEQ *seq = NULL;
+    u8 msgLen = sizeof(MSG_THREAD) + sizeof(DEVICE_LOCATION_SEQ);
+
+    MSG_THREAD* msg = allocMsg(msgLen);
+    if(msg)
+    {
+        seq = (DEVICE_LOCATION_SEQ *)msg->data;
+
+        msg->cmd = CMD_THREAD_DEVICE_GPSHODP;
+        msg->length = sizeof(DEVICE_LOCATION_SEQ);
+
+        seq->seq = ((MSG_DEVICE_REQ *)req)->header.seq;
+
+        LOG_DEBUG("send CMD_THREAD_DEVICE_GPSHODP to THREAD_GPS.");
+        sendMsg(THREAD_GPS, msg, msgLen);
+    }
+    else
+    {
+        device_responseERROR(req);
+    }
+    return 0;
+}
+
+int device_sendGPSSignal(const MSG_THREAD* msg)
+{
+    int msgLen = 0;
+    char *buffer = NULL;
+    MSG_DEVICE_REQ req = {0};
+
+    cJSON *result = NULL;
+    cJSON *json_root = NULL;
+    MSG_DEVICE_RSP *rsp = NULL;
+    GPS_HDOP_INFO *data = (GPS_HDOP_INFO *)msg->data;
+
+    req.header.seq = data->managerSeq;
+    req.header.signature = htons(START_FLAG);
+    req.header.length = 0;
+    req.header.cmd = CMD_DEVICE;
+
+    result = cJSON_CreateObject();
+    if(!result)
+    {
+        device_responseERROR(&req);
+        return -1;
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(result);
+        cJSON_Delete(json_root);
+        device_responseERROR(&req);
+        return -1;
+    }
+
+    cJSON_AddNumberToObject(result, "GPSSignal", data->hdop);
+    cJSON_AddNumberToObject(json_root, "code", 0);
+    cJSON_AddItemToObject(json_root, "result", result);
+
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(&req);
+        return -1;
+    }
+    cJSON_Delete(json_root);
+
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)&req, msgLen);
+    if(!rsp)
+    {
+        device_responseERROR(&req);
+        return -1;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
+
+    return 0;
+}
+
+
+static int device_GetGsmSignal(const void* req, cJSON *param)
+{
+    cJSON *root = NULL;
+    cJSON *json_root = NULL;
+
+    char *buffer = NULL;
+    MSG_DEVICE_RSP *rsp = NULL;
+    int msgLen = 0;
+
+    root = cJSON_CreateObject();
+    if(!root)
+    {
+        device_responseERROR(req);
+        return -1;
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(root);
+        device_responseERROR(req);
+        return -1;
+    }
+
+    cJSON_AddNumberToObject(root, "GSMSignal", diag_gsm_get());
+
+    cJSON_AddNumberToObject(json_root, "code", 0);
+    cJSON_AddItemToObject(json_root, "result", root);
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_Delete(json_root);
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)req, msgLen);
+
+    if(!rsp)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
+    return 0;
+}
+
+static int device_AT(const void* req, cJSON *param)
+{
+    DEVICE_LOCATION_SEQ *seq = NULL;
+    u8 msgLen = sizeof(MSG_THREAD) + sizeof(DEVICE_LOCATION_SEQ);
+    u8 buf[READ_BUFF_SIZE] = {0};
+    unsigned short len = 0;
+    unsigned short rc = 0;
+    char *buf_AT = NULL;
+
+    MSG_THREAD* msg = allocMsg(msgLen);
+    if(msg)
+    {
+        seq = (DEVICE_LOCATION_SEQ *)msg->data;
+
+        msg->cmd = CMD_THREAD_DEVICE_GET_AT;
+        msg->length = sizeof(DEVICE_LOCATION_SEQ);
+
+        seq->seq = ((MSG_DEVICE_REQ *)req)->header.seq;
+        buf_AT = cJSON_GetObjectItem(param, "AT")->valuestring;
+
+        len = strlen(buf_AT);
+        LOG_DEBUG("%s %d", buf_AT, len);
+        rc = eat_modem_write(buf_AT, rc);
+        debug_proc(buf_AT, len);
+
+        LOG_DEBUG("send CMD_THREAD_DEVICE_AT to THREAD_MAIN.");
+        sendMsg(THREAD_MAIN, msg, msgLen);
+    }
+    else
+    {
+        device_responseERROR(req);
+    }
+}
+
+int device_sendAT(const MSG_THREAD* msg)
+{
+    int msgLen = 0;
+    char *buffer = NULL;
+    MSG_DEVICE_REQ req = {0};
+
+    cJSON *root = NULL;
+    cJSON *json_root = NULL;
+    DEVICE_AT_RD *data = NULL;
+    MSG_DEVICE_RSP *rsp = NULL;
+    data = (DEVICE_AT_RD *)msg->data;
+    if(!data)
+    {
+        LOG_DEBUG("ERROR!");
+        return -1;
+    }
+    req.header.seq = data->seq - 48;    //subtract 0 ASCLL
+    req.header.signature = htons(START_FLAG);
+    req.header.length = 0;
+    req.header.cmd = CMD_DEVICE;
+
+    root = cJSON_CreateObject();
+    if(!root)
+    {
+        device_responseERROR(&req);
+        return -1;
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(root);
+        device_responseERROR(&req);
+        return -1;
+    }
+
+    cJSON_AddStringToObject(root, "response", data->AT_RD);
+    cJSON_AddNumberToObject(json_root, "code", 0);
+    cJSON_AddItemToObject(json_root, "result", root);
+    buffer = cJSON_PrintUnformatted(json_root);
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(&req);
+        return EAT_FALSE;
+    }
+
+    cJSON_Delete(json_root);
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)&req, msgLen);
+
+    if(!rsp)
+    {
+        device_responseERROR(&req);
+        return EAT_FALSE;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
+    return 0;
+}
+
+static int device_GetLog(const void* req, cJSON *param)
+{
+    cJSON *root = NULL;
+    cJSON *json_root = NULL;
+
+    char *buffer = NULL;
+    MSG_DEVICE_RSP *rsp = NULL;
+    int msgLen = 0;
+    int rc = 0;
+    char buf_log[MAX_DEBUG_BUF_LEN] = {0};
+
+    rc = log_GetLog(buf_log,MAX_DEBUG_BUF_LEN);
+    if(MSG_SUCCESS > rc)
+    {
+        LOG_ERROR("get log file error");
+        device_responseERROR(req);
+        return -1;
+    }
+
+    root = cJSON_CreateObject();
+    if(!root)
+    {
+        device_responseERROR(req);
+        return -1;
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(root);
+        device_responseERROR(req);
+        return -1;
+    }
+
+    cJSON_AddStringToObject(root, "log", buf_log);
+    cJSON_AddNumberToObject(json_root, "code", 0);
+    cJSON_AddItemToObject(json_root, "result", root);
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_Delete(json_root);
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)req, msgLen);
+
+    if(!rsp)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
+    return 0;
+}
+
+static int device_reboot(const void* req, cJSON *param)
+{
+    LOG_DEBUG("reboot.");
+
+    eat_reset_module();
+
+    device_responseOK(req);
+    return 0;
+}
 
 static DEVICE_MSG_PROC deviceProcs[] =
 {
@@ -672,7 +1070,13 @@ static DEVICE_MSG_PROC deviceProcs[] =
     {DEVICE_DOWNLOAD_AUDIOFILE,device_DownloadAudioFile},
     {DEVICE_SET_BLUETOOTHSW,   device_SetBlutoothSwitch},
     {DEVICE_START_ALARM,       device_StartAlarm},
-    {DEVICE_CONTROL_LOCK,      device_ControlCarLocked}
+    {DEVICE_CONTROL_LOCK,      device_ControlCarLocked},
+    {DEVICCE_GET_SERVER,       device_GetServer},
+    {DEVICE_GET_GPS_SIGNAL,    device_GetGpsSignal},
+    {DEVICE_GET_GSM_SIGNAL,    device_GetGsmSignal},
+    {DEVICE_AT,                device_AT},
+    {DEVICE_GET_LOG,           device_GetLog},
+    {DEVICE_REBOOT,            device_reboot},
 };
 
 int cmd_device_handler(const void* msg)

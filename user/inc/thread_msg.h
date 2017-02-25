@@ -22,6 +22,9 @@ enum CMD
     CMD_THREAD_PUTEND,
     CMD_THREAD_DEVICE_LOCATION,
     CMD_THREAD_BLUETOOTHRESET,
+    CMD_THREAD_DEVICE_GPSHODP,
+    CMD_THREAD_DEVICE_GET_AT,
+    CMD_THREAD_DEVICE_AT,
 };
 
 
@@ -101,6 +104,12 @@ typedef struct
 {
     char seq;
 }__attribute__((__packed__))DEVICE_LOCATION_SEQ;
+
+typedef struct
+{
+    char seq;
+    u8 AT_RD[];
+}__attribute__((__packed__))DEVICE_AT_RD;
 
 
 #define allocMsg(len) eat_mem_alloc(len)

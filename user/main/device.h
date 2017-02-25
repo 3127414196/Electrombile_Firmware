@@ -9,5 +9,6 @@
 
 int cmd_device_handler(const void* msg);
 int device_sendGPS(const MSG_THREAD* msg);
+int device_sendGPSSignal(const MSG_THREAD* msg);
 
 #endif

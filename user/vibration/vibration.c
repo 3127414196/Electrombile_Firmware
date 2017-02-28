@@ -286,18 +286,22 @@ static void vibration_switchState_handler(void)
     last_switchState = switchState;
 }
 
-void eat_gpio_int_cutoff_cb(EatInt_st *interrupt)
+static void vibration_cutoff_handler(void)
 {
-    if(interrupt->pin == EAT_PIN9_DTR)
+    static EatGpioLevel_enum last_level = EAT_GPIO_LEVEL_LOW;
+
+    EatGpioLevel_enum pin_level = eat_gpio_read(EAT_PIN62_COL0);
+    if(EAT_GPIO_LEVEL_HIGH == last_level && EAT_GPIO_LEVEL_LOW == pin_level)
     {
-        LOG_INFO("cut!!!!!!!!!!!!!!!!!!off!!!!!!!!!!!!");
         vibration_alarm_cutoff();
     }
+    last_level = pin_level;
 }
 
 static void vibration_oneSecond_Loop(void)
 {
     vibration_move_handler();
+    vibration_cutoff_handler();
     vibration_switchState_handler();
 }
 
@@ -318,10 +322,6 @@ void app_vibration_thread(void *data)
 	{
 	    mma8652_config();
 	}
-
-    eat_gpio_setup(EAT_PIN62_COL0, EAT_GPIO_DIR_INPUT, EAT_GPIO_LEVEL_HIGH);//if default low, device start slowly
-    eat_gpio_setup(EAT_PIN9_DTR, EAT_GPIO_DIR_INPUT, EAT_GPIO_LEVEL_HIGH);//if default low, device start slowly
-    eat_int_setup(EAT_PIN9_DTR, EAT_INT_TRIGGER_FALLING_EDGE, 1, eat_gpio_int_cutoff_cb);
 
 	eat_timer_start(TIMER_VIBRATION, setting.vibration_timer_period);
 

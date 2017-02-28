@@ -555,8 +555,8 @@ static eat_bool gps_DuplicateCheck(LOCAL_GPS *pre_gps, LOCAL_GPS *gps)
             }
             else
             {
-                LOG_DEBUG("GPS is floating. %f, %f.", pre_gps->gps.latitude, gps->gps.latitude);
-                return EAT_TRUE;
+                LOG_DEBUG("GPS is different. %f, %f.", pre_gps->gps.latitude, gps->gps.latitude);
+                return EAT_FALSE;
             }
         }
         else//CELL

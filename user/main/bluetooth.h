@@ -8,8 +8,10 @@
 #ifndef _USER_BLUETOOTH_H_
 #define _USER_BLUETOOTH_H_
 
-void app_bluetooth_thread(void *data);
-
+void bluetooth_startLoop(void);
+void bluetooth_onesecondLoop(void);
+int bluetooth_check_run(u8* buf);
+void bluetooth_resetState(void);
 
 #endif/*_USER_BLUETOOTH_H_*/
 

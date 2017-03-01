@@ -104,7 +104,7 @@ static void ftp_set_server(u8 * buf)
     if(strstr((const char *)buf, "OK"))
     {
         snprintf(cmd, MAX_FTPCMD_LEN, "AT+FTPSERV=\"%s\"\r", setting.ftp_domain);
-        modem_AT(cmd);
+        modem_AT((u8 *)cmd);
     }
     else
     {
@@ -141,7 +141,7 @@ static void ftp_set_file(u8 * buf)
         {
             snprintf(cmd, MAX_FTPCMD_LEN, "AT+FTPGETNAME=\"%s\"\r", ftp_serverFileName);
         }
-        modem_AT(cmd);
+        modem_AT((u8 *)cmd);
     }
     else
     {
@@ -178,7 +178,7 @@ static void ftp_put_file(u8 * buf)
     if(strstr((const char *)buf, "OK"))
     {
         snprintf(cmd, MAX_FTPCMD_LEN, "AT+FTPPUTFRMFS=\"%s\"\r", ftp_localFileName);
-        modem_AT(cmd);
+        modem_AT((u8 *)cmd);
     }
     else
     {
@@ -194,7 +194,7 @@ static void ftp_get_file(u8 * buf)
     if(strstr((const char *)buf, "OK"))
     {
         snprintf(cmd, MAX_FTPCMD_LEN, "AT+FTPGETTOFS=0,\"%s\"\r", ftp_localFileName);
-        modem_AT(cmd);
+        modem_AT((u8 *)cmd);
     }
     else
     {

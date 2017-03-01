@@ -32,4 +32,7 @@ eat_bool modem_AT(unsigned char *cmd);
 #define CR  "\r"    //CR (carriage return)
 #define LF  "\n"    //LF (line feed - new line)
 
+#define READ_BUFF_SIZE 1024
+
+
 #endif /* USER_INC_MODEM_H_ */

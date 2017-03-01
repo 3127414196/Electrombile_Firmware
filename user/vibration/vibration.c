@@ -109,6 +109,7 @@ static eat_bool vibration_alarm_cutoff(void)
 
 static eat_bool vibration_alarm_switchOpen(void)
 {
+    set_vibration_state(EAT_FALSE);// if alarm, set the vibration state as defend off
     return vibration_sendAlarm(ALARM_SWITCH_CHANGE);
 }
 
@@ -270,18 +271,6 @@ static void vibration_move_handler(void)
     return;
 }
 
-static void vibration_cutoff_handler(void)
-{
-    static EatGpioLevel_enum last_level = EAT_GPIO_LEVEL_LOW;
-
-    EatGpioLevel_enum pin_level = eat_gpio_read(EAT_PIN62_COL0);
-    if(EAT_GPIO_LEVEL_HIGH == last_level && EAT_GPIO_LEVEL_LOW == pin_level)
-    {
-        vibration_alarm_cutoff();
-    }
-    last_level = pin_level;
-}
-
 static void vibration_switchState_handler(void)
 {
     static EatGpioLevel_enum last_switchState = EAT_GPIO_LEVEL_LOW;
@@ -295,6 +284,18 @@ static void vibration_switchState_handler(void)
         }
     }
     last_switchState = switchState;
+}
+
+static void vibration_cutoff_handler(void)
+{
+    static EatGpioLevel_enum last_level = EAT_GPIO_LEVEL_LOW;
+
+    EatGpioLevel_enum pin_level = eat_gpio_read(EAT_PIN62_COL0);
+    if(EAT_GPIO_LEVEL_HIGH == last_level && EAT_GPIO_LEVEL_LOW == pin_level)
+    {
+        vibration_alarm_cutoff();
+    }
+    last_level = pin_level;
 }
 
 static void vibration_oneSecond_Loop(void)
@@ -314,15 +315,13 @@ void app_vibration_thread(void *data)
 	ret = mma8652_init();
 	if (!ret)
 	{
-        //LED_off();
+        LED_startFastBlink();
         LOG_ERROR("mma8652 init failed");
 	}
 	else
 	{
 	    mma8652_config();
 	}
-
-    eat_gpio_setup(EAT_PIN62_COL0, EAT_GPIO_DIR_INPUT, EAT_GPIO_LEVEL_HIGH);//if default low, device start slowly
 
 	eat_timer_start(TIMER_VIBRATION, setting.vibration_timer_period);
 

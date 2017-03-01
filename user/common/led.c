@@ -5,9 +5,11 @@
  *      Author: jk
  */
 #include <eat_periphery.h>
+#include <eat_timer.h>
 
 #include "log.h"
 
+#define ONE_SECOND_GPT_TIME 16384
 void LED_on(void)
 {
     eat_bool rc;
@@ -32,12 +34,25 @@ void LED_off(void)
     }
 }
 
-void LED_fastBlink(void)
+static void LED_Blink(void)
 {
+    static eat_bool state = EAT_TRUE;
 
+    eat_bool rc;
+    state = !state;
+    rc = eat_gpio_setup(EAT_PIN55_ROW3, EAT_GPIO_DIR_OUTPUT, state);
+    if(EAT_FALSE == rc)
+    {
+        LOG_ERROR("LED_OFF error");
+    }
 }
 
-void LED_slowBlink(void)
+void LED_startFastBlink(void)
 {
+    eat_gpt_start(ONE_SECOND_GPT_TIME / 2, EAT_TRUE, LED_Blink);
+}
 
+void LED_startSlowBlink(void)
+{
+    eat_gpt_start(2 * ONE_SECOND_GPT_TIME, EAT_TRUE, LED_Blink);
 }

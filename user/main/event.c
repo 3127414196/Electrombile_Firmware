@@ -31,6 +31,7 @@
 #include "audio_source.h"
 #include "seek.h"
 #include "record.h"
+#include "device.h"
 
 typedef int (*EVENT_FUNC)(const EatEvent_st* event);
 typedef struct
@@ -97,6 +98,11 @@ static int event_timer(const EatEvent_st* event)
         case TIMER_MSG_RESEND:
             msg_resend();
             eat_timer_start(event->data.timer.timer_id, 60*1000);
+            break;
+
+        case TIMER_BLUETOOTH:
+            bluetooth_onesecondLoop();
+            eat_timer_start(event->data.timer.timer_id, setting.bluetooth_timer_period);
             break;
 
         default:
@@ -280,6 +286,11 @@ static int threadCmd_Alarm(const MSG_THREAD* msg)
     return cmd_alarm(msg_data->alarm_type);
 }
 
+static int threadCmd_deviceGPS(const MSG_THREAD* msg)
+{
+    return device_sendGPS(msg);
+}
+
 static int threadCmd_PutEnd(const MSG_THREAD* msg)
 {
     FTP_PUTFILE_INFO *msg_data = (FTP_PUTFILE_INFO *)msg->data;
@@ -380,10 +391,10 @@ static int cmd_get_AT(char *data)
 
 static int event_mod_ready_rd(const EatEvent_st* event)
 {
-	u8 buf[256] = {0};
+	u8 buf[READ_BUFF_SIZE] = {0};
 	u16 len = 0;
 
-	len = eat_modem_read(buf, 256);
+	len = eat_modem_read(buf, READ_BUFF_SIZE);
 	if (!len)
 	{
 	    LOG_ERROR("modem received nothing.");
@@ -409,7 +420,10 @@ static int event_mod_ready_rd(const EatEvent_st* event)
     }
 
     ftp_modem_run(buf);
+
     record_modem_run(buf);
+
+    bluetooth_check_run(buf);
 
 	return 0;
 }
@@ -424,6 +438,7 @@ static THREAD_MSG_PROC msgProcs[] =
         {CMD_THREAD_AUTOLOCK, threadCmd_AutolockState},
         {CMD_THREAD_GPSHDOP, threadCmd_GPSHdop},
         {CMD_THREAD_PUTEND, threadCmd_PutEnd},
+        {CMD_THREAD_DEVICE_LOCATION, threadCmd_deviceGPS}
 };
 
 static int event_threadMsg(const EatEvent_st* event)
@@ -478,7 +493,7 @@ static EVENT_PROC eventProcs[] =
     {EAT_EVENT_UART_SEND_COMPLETE,  EAT_NULL},
     {EAT_EVENT_USER_MSG,            event_threadMsg},
     {EAT_EVENT_ADC,                 event_adc},
-    {EAT_EVENT_AUD_PLAY_FINISH_IND, event_aud_play_finish}
+    {EAT_EVENT_AUD_PLAY_FINISH_IND, event_aud_play_finish},
 };
 
 
@@ -486,7 +501,7 @@ int event_proc(EatEvent_st* event)
 {
     int i = 0;
 
-    LOG_DEBUG("event: %s happened", getEventDescription(event->event));
+    //LOG_DEBUG("event: %s happened", getEventDescription(event->event));
 
     for (i = 0; i < sizeof(eventProcs) / sizeof(eventProcs[0]); i++)
     {

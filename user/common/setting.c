@@ -134,7 +134,7 @@ static void setting_initial(void)
     /* Server configuration */
 #if 1
     setting.addr_type = ADDR_TYPE_DOMAIN;
-    strncpy(setting.domain, "test.xiaoan110.com",MAX_DOMAIN_NAME_LEN);
+    strncpy(setting.domain, "www.xiaoan110.com",MAX_DOMAIN_NAME_LEN);
 #else
     setting.addr_type = ADDR_TYPE_IP;
     setting.ipaddr[0] = 118;
@@ -143,7 +143,7 @@ static void setting_initial(void)
     setting.ipaddr[3] = 130;
 #endif
 
-    strncpy(setting.ftp_domain, "test.xiaoan110.com", MAX_DOMAIN_NAME_LEN);
+    strncpy(setting.ftp_domain, "www.xiaoan110.com", MAX_DOMAIN_NAME_LEN);
     setting.port = 9880;
 
     /* Timer configuration */

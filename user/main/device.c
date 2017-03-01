@@ -844,25 +844,25 @@ static int device_GetGsmSignal(const void* req, cJSON *param)
     MSG_DEVICE_RSP *rsp = NULL;
     int msgLen = 0;
 
-    root = cJSON_CreateObject();
-    if(!root)
+    json_root = cJSON_CreateObject();
+    if(!json_root)
     {
         device_responseERROR(req);
         return -1;
     }
 
-    json_root = cJSON_CreateObject();
-    if(!json_root)
+    root = cJSON_CreateObject();
+    if(!root)
     {
-        cJSON_Delete(root);
+        cJSON_Delete(json_root);
         device_responseERROR(req);
         return -1;
     }
 
     cJSON_AddNumberToObject(root, "GSMSignal", diag_gsm_get());
-
     cJSON_AddNumberToObject(json_root, "code", 0);
     cJSON_AddItemToObject(json_root, "result", root);
+
     buffer = cJSON_PrintUnformatted(json_root);
     if(!buffer)
     {
@@ -870,11 +870,10 @@ static int device_GetGsmSignal(const void* req, cJSON *param)
         device_responseERROR(req);
         return EAT_FALSE;
     }
-
     cJSON_Delete(json_root);
+
     msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
     rsp = alloc_device_msg((MSG_HEADER*)req, msgLen);
-
     if(!rsp)
     {
         device_responseERROR(req);
@@ -890,145 +889,56 @@ static int device_GetGsmSignal(const void* req, cJSON *param)
 
 static int device_AT(const void* req, cJSON *param)
 {
-    DEVICE_LOCATION_SEQ *seq = NULL;
-    u8 msgLen = sizeof(MSG_THREAD) + sizeof(DEVICE_LOCATION_SEQ);
-    u8 buf[READ_BUFF_SIZE] = {0};
-    unsigned short len = 0;
-    unsigned short rc = 0;
-    char *buf_AT = NULL;
-
-    MSG_THREAD* msg = allocMsg(msgLen);
-    if(msg)
-    {
-        seq = (DEVICE_LOCATION_SEQ *)msg->data;
-
-        msg->cmd = CMD_THREAD_DEVICE_GET_AT;
-        msg->length = sizeof(DEVICE_LOCATION_SEQ);
-
-        seq->seq = ((MSG_DEVICE_REQ *)req)->header.seq;
-        buf_AT = cJSON_GetObjectItem(param, "AT")->valuestring;
-
-        len = strlen(buf_AT);
-        LOG_DEBUG("%s %d", buf_AT, len);
-        rc = eat_modem_write(buf_AT, rc);
-        debug_proc(buf_AT, len);
-
-        LOG_DEBUG("send CMD_THREAD_DEVICE_AT to THREAD_MAIN.");
-        sendMsg(THREAD_MAIN, msg, msgLen);
-    }
-    else
-    {
-        device_responseERROR(req);
-    }
-}
-
-int device_sendAT(const MSG_THREAD* msg)
-{
-    int msgLen = 0;
-    char *buffer = NULL;
-    MSG_DEVICE_REQ req = {0};
-
-    cJSON *root = NULL;
-    cJSON *json_root = NULL;
-    DEVICE_AT_RD *data = NULL;
-    MSG_DEVICE_RSP *rsp = NULL;
-    data = (DEVICE_AT_RD *)msg->data;
-    if(!data)
-    {
-        LOG_DEBUG("ERROR!");
-        return -1;
-    }
-    req.header.seq = data->seq - 48;    //subtract 0 ASCLL
-    req.header.signature = htons(START_FLAG);
-    req.header.length = 0;
-    req.header.cmd = CMD_DEVICE;
-
-    root = cJSON_CreateObject();
-    if(!root)
-    {
-        device_responseERROR(&req);
-        return -1;
-    }
-
-    json_root = cJSON_CreateObject();
-    if(!json_root)
-    {
-        cJSON_Delete(root);
-        device_responseERROR(&req);
-        return -1;
-    }
-
-    cJSON_AddStringToObject(root, "response", data->AT_RD);
-    cJSON_AddNumberToObject(json_root, "code", 0);
-    cJSON_AddItemToObject(json_root, "result", root);
-    buffer = cJSON_PrintUnformatted(json_root);
-    buffer = cJSON_PrintUnformatted(json_root);
-    if(!buffer)
-    {
-        cJSON_Delete(json_root);
-        device_responseERROR(&req);
-        return EAT_FALSE;
-    }
-
-    cJSON_Delete(json_root);
-    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
-    rsp = alloc_device_msg((MSG_HEADER*)&req, msgLen);
-
-    if(!rsp)
-    {
-        device_responseERROR(&req);
-        return EAT_FALSE;
-    }
-
-    strncpy(rsp->data, buffer, strlen(buffer));
-    free(buffer);
-
-    socket_sendDataDirectly(rsp, msgLen);
+    device_responseOK(req);
     return 0;
 }
 
 static int device_GetLog(const void* req, cJSON *param)
 {
-    cJSON *root = NULL;
+#define MAX_LOG_LEN 218
+
+    cJSON *result = NULL;
     cJSON *json_root = NULL;
 
+    int rc = 0;
+    int msgLen = 0;
     char *buffer = NULL;
     MSG_DEVICE_RSP *rsp = NULL;
-    int msgLen = 0;
-    int rc = 0;
     char buf_log[MAX_DEBUG_BUF_LEN] = {0};
 
-    rc = log_GetLog(buf_log,MAX_DEBUG_BUF_LEN);
-    if(strlen(buf_log) > 220)   //256-36(other massage len)
-    {
-         LOG_DEBUG("data is to large to send");
-         buf_log[218] = '\0';
-    }
-    if(MSG_SUCCESS > rc)
+    rc = log_GetLog(buf_log, MAX_DEBUG_BUF_LEN);
+    if(rc != MSG_SUCCESS)
     {
         LOG_ERROR("get log file error");
         device_responseERROR(req);
         return -1;
     }
 
-    root = cJSON_CreateObject();
-    if(!root)
+    if(strlen(buf_log) > MAX_LOG_LEN)
     {
-        device_responseERROR(req);
-        return -1;
+         LOG_DEBUG("data is to large to send");
+         buf_log[MAX_LOG_LEN] = 0;
     }
 
     json_root = cJSON_CreateObject();
     if(!json_root)
     {
-        cJSON_Delete(root);
         device_responseERROR(req);
         return -1;
     }
 
-    cJSON_AddStringToObject(root, "log", buf_log);
+    result = cJSON_CreateObject();
+    if(!result)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(req);
+        return -1;
+    }
+
+    cJSON_AddStringToObject(result, "log", buf_log);
     cJSON_AddNumberToObject(json_root, "code", 0);
-    cJSON_AddItemToObject(json_root, "result", root);
+    cJSON_AddItemToObject(json_root, "result", result);
+
     buffer = cJSON_PrintUnformatted(json_root);
     if(!buffer)
     {
@@ -1036,11 +946,10 @@ static int device_GetLog(const void* req, cJSON *param)
         device_responseERROR(req);
         return EAT_FALSE;
     }
-
     cJSON_Delete(json_root);
+
     msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
     rsp = alloc_device_msg((MSG_HEADER*)req, msgLen);
-
     if(!rsp)
     {
         device_responseERROR(req);
@@ -1058,9 +967,9 @@ static int device_reboot(const void* req, cJSON *param)
 {
     LOG_DEBUG("reboot.");
 
-    eat_reset_module();
-
     device_responseOK(req);
+
+    eat_reset_module();
     return 0;
 }
 

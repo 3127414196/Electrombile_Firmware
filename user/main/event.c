@@ -297,43 +297,6 @@ static int threadCmd_deviceGpsSignal(const MSG_THREAD* msg)
     return device_sendGPSSignal(msg);
 }
 
-static int threadCmd_device_get_AT(const MSG_THREAD* Thread_msg)
-{
-    u8 msgLen = 0;
-    MSG_THREAD* msg = NULL;
-    DEVICE_AT_RD *data = NULL;
-    DEVICE_LOCATION_SEQ *seq;
-    u8 buf[READ_BUFF_SIZE] = {0};
-    u8 buffer[MAX_DEBUG_BUF_LEN] = {0};
-	u16 len = 0;
-
-    LOG_DEBUG("MAIN_THREAD GET CMD_THREAD_DEVICE_GET_AT");
-
-	len = eat_modem_read(buf, READ_BUFF_SIZE);
-    if (!len)
-	{
-	    LOG_ERROR("modem received nothing.");
-	}
-    seq = (DEVICE_LOCATION_SEQ *)Thread_msg->data;
-    snprintf(buffer, MAX_DEBUG_BUF_LEN, "%d%s", seq->seq, buf);
-    msgLen = sizeof(MSG_THREAD) + strlen(buffer) + 1;
-    msg = allocMsg(msgLen);
-
-    msg->cmd = CMD_THREAD_DEVICE_AT;
-    msg->length = strlen(buffer) + 1;
-    strncpy(msg->data,  buffer, strlen(buffer) + 1);
-    LOG_DEBUG("modem : %s", buf);
-    LOG_DEBUG("%s", msg->data);
-    LOG_DEBUG("send CMD_THREAD_DEVICE_LOCATION to THREAD_MAIN.");
-    sendMsg(THREAD_MAIN, msg, msgLen);
-}
-
-static int threadCmd_device_AT(const MSG_THREAD* msg)
-{
-    LOG_DEBUG("MAIN_THREAD GET CMD_THREAD_DEVICE_LOCATION");
-    return device_sendAT(msg);
-}
-
 static int threadCmd_PutEnd(const MSG_THREAD* msg)
 {
     FTP_PUTFILE_INFO *msg_data = (FTP_PUTFILE_INFO *)msg->data;
@@ -483,8 +446,6 @@ static THREAD_MSG_PROC msgProcs[] =
         {CMD_THREAD_PUTEND, threadCmd_PutEnd},
         {CMD_THREAD_DEVICE_LOCATION, threadCmd_deviceGPS},
         {CMD_THREAD_DEVICE_GPSHODP, threadCmd_deviceGpsSignal},
-        {CMD_THREAD_DEVICE_GET_AT, threadCmd_device_get_AT},
-        {CMD_THREAD_DEVICE_AT, threadCmd_device_AT}
 };
 
 static int event_threadMsg(const EatEvent_st* event)

@@ -65,8 +65,8 @@ SETTING setting;
 #define TAG_VIBRATE "defendstate"
 
 #define TAG_BLUETOOTH "bluetooth"
-#define TAG_BLUETOOTH_ID "bluetoothId"
-#define TAG_BLUETOOTH_SWICTH  "bluetoothswitch"
+#define TAG_BLUETOOTH_ID "id"
+#define TAG_BLUETOOTH_SWICTH  "sw"
 
 
 static int setting_changeServer(const unsigned char* cmdString, unsigned short length)
@@ -133,7 +133,7 @@ static void setting_initial(void)
     /* Server configuration */
 #if 1
     setting.addr_type = ADDR_TYPE_DOMAIN;
-    strncpy(setting.domain, "www.xiaoan110.com",MAX_DOMAIN_NAME_LEN);
+    strncpy(setting.domain, "test.xiaoan110.com",MAX_DOMAIN_NAME_LEN);
 #else
     setting.addr_type = ADDR_TYPE_IP;
     setting.ipaddr[0] = 118;
@@ -142,7 +142,7 @@ static void setting_initial(void)
     setting.ipaddr[3] = 130;
 #endif
 
-    strncpy(setting.ftp_domain, "www.xiaoan110.com", MAX_DOMAIN_NAME_LEN);
+    strncpy(setting.ftp_domain, "test.xiaoan110.com", MAX_DOMAIN_NAME_LEN);
     setting.port = 9880;
 
     /* Timer configuration */

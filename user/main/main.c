@@ -28,7 +28,7 @@
 #include "version.h"
 #include "minilzo.h"
 #include "telecontrol.h"
-#include "bluetooth.h"
+//#include "bluetooth.h"
 #include "led.h"
 
 /********************************************************************
@@ -155,8 +155,6 @@ void app_main(void *data)
     fs_initial();
 
     startWatchdog();
-
-    bluetooth_startLoop();
 
     while(EAT_TRUE)
     {

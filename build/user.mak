@@ -24,7 +24,7 @@ OUTPUT_LIB_DIR = output/obj
 OUTPUT_LOG_DIR = output/log
 
 #project name in project directory
-SRC_OPEN_MODE_NAME = main gps vibration sms common nmea 3rd battery bluetooth
+SRC_OPEN_MODE_NAME = main gps vibration sms common nmea 3rd battery
 
 # Macro definition
 # FEA_APP_EXAMPLE_OPT = -DAPP_EXAMPLE

@@ -32,8 +32,6 @@
 #include "telecontrol.h"
 #include "audio_source.h"
 #include "response.h"
-#include "eat_modem.h"
-#include "modem.h"
 
 enum
 {

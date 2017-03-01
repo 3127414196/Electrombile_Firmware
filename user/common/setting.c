@@ -63,6 +63,7 @@ SETTING setting;
 
 #define TAG_IS_VIBRATEFIXED "isVibrateFixed"
 #define TAG_VIBRATE "defendstate"
+#define TAG_SWITCHWITHDEFEND "switchwithdefend"
 
 #define TAG_BLUETOOTH "bluetooth"
 #define TAG_BLUETOOTH_ID "id"
@@ -155,6 +156,7 @@ static void setting_initial(void)
 
     /* Switch configuration */
     setting.isVibrateFixed = EAT_FALSE;
+    setting.isSwitchwithDefend = EAT_FALSE;
 
     //autolock configuration
     setting.isAutodefendFixed = EAT_TRUE;
@@ -180,6 +182,17 @@ eat_bool vibration_fixed(void)
 void set_vibration_state(eat_bool fixed)
 {
     setting.isVibrateFixed = fixed;
+    setting_save();
+}
+
+eat_bool isSwitchDefend(void)
+{
+    return setting.isSwitchwithDefend;
+}
+
+void set_SwitchDefend(eat_bool fixed)
+{
+    setting.isSwitchwithDefend = fixed;
     setting_save();
 }
 
@@ -276,6 +289,7 @@ eat_bool setting_restore(void)
     cJSON *battery = 0;
     cJSON *defend_state = 0;
     cJSON *bluetooth = 0;
+    cJSON *tmp = 0;
 
     setting_initial();
 
@@ -384,35 +398,70 @@ eat_bool setting_restore(void)
     if (autolock)
     {
         LOG_DEBUG("restore autolock conf");
-        setting.isAutodefendFixed = cJSON_GetObjectItem(autolock, TAG_LOCK)->valueint ? EAT_TRUE : EAT_FALSE;
-        setting.autodefendPeriod = cJSON_GetObjectItem(autolock, TAG_PERIOD)->valueint;
+        if(tmp = cJSON_GetObjectItem(autolock, TAG_LOCK))
+        {
+            setting.isAutodefendFixed = tmp->valueint ? EAT_TRUE : EAT_FALSE;
+        }
+
+        if(tmp = cJSON_GetObjectItem(autolock, TAG_PERIOD))
+        {
+            setting.autodefendPeriod = tmp->valueint;
+        }
     }
 
     battery = cJSON_GetObjectItem(conf, TAG_BATTERY);
     if(battery)
     {
         LOG_DEBUG("restore battery conf");
-        setting.isUserType = cJSON_GetObjectItem(battery, TAG_ISUSERTYPE)->valueint ? EAT_TRUE : EAT_FALSE;
-        setting.BatteryType = cJSON_GetObjectItem(battery, TAG_BATTERYTYPE)->valueint;
-        setting.BaterryType_Judging = cJSON_GetObjectItem(battery, TAG_BATTERYTYPE_JUDGING)->valueint;
-        setting.isBatteryJudging = cJSON_GetObjectItem(battery, TAG_IS_BATTERYTYPE_JUDGING)->valueint ? EAT_TRUE : EAT_FALSE;
-        LOG_DEBUG("BATTERY TYPE IS %d", setting.BatteryType);
+        if(tmp = cJSON_GetObjectItem(battery, TAG_ISUSERTYPE))
+        {
+            setting.isUserType = tmp->valueint ? EAT_TRUE : EAT_FALSE;
+        }
+
+        if(tmp = cJSON_GetObjectItem(battery, TAG_BATTERYTYPE))
+        {
+            setting.BatteryType = tmp->valueint;
+        }
+
+        if(tmp = cJSON_GetObjectItem(battery, TAG_BATTERYTYPE_JUDGING))
+        {
+            setting.BaterryType_Judging = tmp->valueint;
+        }
+
+        if(tmp = cJSON_GetObjectItem(battery, TAG_IS_BATTERYTYPE_JUDGING))
+        {
+            setting.isBatteryJudging = tmp->valueint ? EAT_TRUE : EAT_FALSE;
+        }
     }
 
     defend_state = cJSON_GetObjectItem(conf, TAG_VIBRATE);
     if(defend_state)
     {
         LOG_DEBUG("restore defend_state conf");
-        setting.isVibrateFixed = cJSON_GetObjectItem(defend_state, TAG_IS_VIBRATEFIXED)->valueint ? EAT_TRUE : EAT_FALSE;
+        if(tmp = cJSON_GetObjectItem(defend_state, TAG_IS_VIBRATEFIXED))
+        {
+            setting.isVibrateFixed = tmp->valueint ? EAT_TRUE : EAT_FALSE;
+        }
+
+        if(tmp = cJSON_GetObjectItem(defend_state, TAG_SWITCHWITHDEFEND))
+        {
+            setting.isSwitchwithDefend = tmp->valueint?EAT_TRUE:EAT_FALSE;
+        }
     }
 
     bluetooth = cJSON_GetObjectItem(conf, TAG_BLUETOOTH);
     if(bluetooth)
     {
-        char *BluetoothId = cJSON_GetObjectItem(bluetooth, TAG_BLUETOOTH_ID)->valuestring;
         LOG_DEBUG("restore bluetooth conf");
-        strncpy(setting.BluetoothId, BluetoothId, BLUETOOTH_ID_LEN);
-        setting.BluetoothSwitch = cJSON_GetObjectItem(bluetooth, TAG_BLUETOOTH_SWICTH)->valueint ? EAT_TRUE : EAT_FALSE;
+        if(tmp = cJSON_GetObjectItem(bluetooth, TAG_BLUETOOTH_ID))
+        {
+            strncpy(setting.BluetoothId, tmp->valuestring, BLUETOOTH_ID_LEN);
+        }
+
+        if(tmp = cJSON_GetObjectItem(bluetooth, TAG_BLUETOOTH_SWICTH))
+        {
+            setting.BluetoothSwitch = tmp->valueint?EAT_TRUE:EAT_FALSE;
+        }
     }
 
     free(buf);
@@ -465,6 +514,7 @@ eat_bool setting_save(void)
     cJSON_AddItemToObject(root, TAG_BATTERY, battery);
 
     cJSON_AddNumberToObject(defend_state, TAG_IS_VIBRATEFIXED, setting.isVibrateFixed);
+    cJSON_AddNumberToObject(defend_state, TAG_SWITCHWITHDEFEND,  setting.isSwitchwithDefend);
     cJSON_AddItemToObject(root, TAG_VIBRATE, defend_state);
 
     cJSON_AddStringToObject(bluetooth, TAG_BLUETOOTH_ID, setting.BluetoothId);

@@ -56,6 +56,7 @@ enum
     DEVICE_AT                = 19,
     DEVICE_GET_LOG           = 20,
     DEVICE_REBOOT            = 21,
+    DEVICE_SWITCHDEFEND      = 22,
 }DEVICE_CMD_NAME;
 
 typedef int (*DEVICE_PROC)(const void*, cJSON*);
@@ -971,6 +972,37 @@ static int device_reboot(const void* req, cJSON *param)
     return 0;
 }
 
+static int device_swicthDefend(const void* req, cJSON *param)
+{
+    cJSON *sw = NULL;
+
+    if(!param)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    sw = cJSON_GetObjectItem(param, "sw");
+    if(sw)
+    {
+        if(sw->valueint)
+        {
+            set_SwitchDefend(EAT_TRUE);
+        }
+        else
+        {
+            set_SwitchDefend(EAT_FALSE);
+        }
+        device_responseOK(req);
+    }
+    else
+    {
+        device_responseERROR(req);
+    }
+
+    return 0;
+}
+
 static DEVICE_MSG_PROC deviceProcs[] =
 {
     {DEVICE_GET_DEVICEINFO,    device_GetDeviceInfo},
@@ -994,6 +1026,7 @@ static DEVICE_MSG_PROC deviceProcs[] =
     {DEVICE_AT,                device_AT},
     {DEVICE_GET_LOG,           device_GetLog},
     {DEVICE_REBOOT,            device_reboot},
+    {DEVICE_SWITCHDEFEND,      device_swicthDefend},
 };
 
 int cmd_device_handler(const void* msg)

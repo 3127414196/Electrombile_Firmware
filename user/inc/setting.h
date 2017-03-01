@@ -46,6 +46,7 @@ typedef struct
 
     //Switch configuration
     eat_bool isVibrateFixed;
+    eat_bool isSwitchwithDefend;
 
     //autolock configration
     struct
@@ -55,14 +56,20 @@ typedef struct
     };
 
     //battery type
-    eat_bool isUserType;
-    u8 BatteryType;
-    u8 BaterryType_Judging;
-    eat_bool isBatteryJudging;
+    struct
+    {
+        eat_bool isUserType;
+        u8 BatteryType;
+        u8 BaterryType_Judging;
+        eat_bool isBatteryJudging;
+    };
 
     //bluetooth id
-    eat_bool BluetoothSwitch;
-    char BluetoothId[BLUETOOTH_ID_LEN];
+    struct
+    {
+        eat_bool BluetoothSwitch;
+        char BluetoothId[BLUETOOTH_ID_LEN];
+    };
 
 }SETTING;
 
@@ -89,6 +96,8 @@ void set_battery_isJudging(eat_bool isBatteryJudging, u8 baterrytype);
 void set_bluetooth_id(const char* BluetoothIdString);
 void set_bluetooth_switch(eat_bool sw);
 eat_bool is_bluetoothOn(void);
+eat_bool isSwitchDefend(void);
+void set_SwitchDefend(eat_bool fixed);
 
 
 eat_bool setting_restore(void);

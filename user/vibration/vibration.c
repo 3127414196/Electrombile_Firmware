@@ -298,21 +298,6 @@ static void vibration_cutoff_handler(void)
     last_level = pin_level;
 }
 
-static void vibration_switchState_handler(void)
-{
-    static EatGpioLevel_enum last_switchState = EAT_GPIO_LEVEL_LOW;
-
-    EatGpioLevel_enum switchState = telecontrol_getSwitchState();
-    if(vibration_fixed())
-    {
-        if(EAT_GPIO_LEVEL_LOW == last_switchState && EAT_GPIO_LEVEL_HIGH == switchState)
-        {
-            vibration_alarm_switchOpen();
-        }
-    }
-    last_switchState = switchState;
-}
-
 static void vibration_oneSecond_Loop(void)
 {
     vibration_move_handler();

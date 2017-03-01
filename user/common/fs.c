@@ -15,6 +15,7 @@
 #include "log.h"
 #include "debug.h"
 #include "utils.h"
+#include "setting.h"
 
 #define SYSTEM_DRIVE    "C:\\"
 #define TF_DRIVE        "D:\\"
@@ -22,11 +23,14 @@
 #define CMD_STRING_LS   "ls"
 #define CMD_STRING_RM   "rm"
 #define CMD_STRING_CAT  "cat"
-#define CMD_STRING_TAIL  "tail"
+#define CMD_STRING_TAIL "tail"
+#define CMD_STRING_IP   "setting"
 
 
 
 #define MAX_FILENAME_LEN    32
+#define MAX_DOMAIN_NAME_LEN 32
+
 static int fs_ls(const unsigned char* cmdString, unsigned short length)
 {
     FS_HANDLE fh;
@@ -230,12 +234,22 @@ static int fs_tail(const unsigned char* cmdString, unsigned short length)
     return rc;
 }
 
+static int fs_setting_ip(const unsigned char* cmdString, unsigned short length)
+{
+    char serverString_1[MAX_DOMAIN_NAME_LEN] = {0};
+    unsigned char serverString_2[MAX_DOMAIN_NAME_LEN] = {0};
+    sscanf(cmdString, "%*s%*s%s", serverString_1);
+    snprintf(serverString_2, MAX_DOMAIN_NAME_LEN, "server %s", serverString_1);
+    setting_changeServer(serverString_2, strlen(serverString_2));//register the debug command
+}
+
 void fs_initial(void)
 {
     regist_cmd(CMD_STRING_LS, fs_ls);
     regist_cmd(CMD_STRING_RM, fs_rm);
     regist_cmd(CMD_STRING_CAT, fs_cat);
     regist_cmd(CMD_STRING_TAIL, fs_tail);
+    regist_cmd(CMD_STRING_IP, fs_setting_ip);
 }
 
 SINT64 fs_getDiskFreeSize(void)

@@ -69,7 +69,7 @@ SETTING setting;
 #define TAG_BLUETOOTH_SWICTH  "sw"
 
 
-static int setting_changeServer(const unsigned char* cmdString, unsigned short length)
+int setting_changeServer(const unsigned char* cmdString, unsigned short length)
 {
     char address[MAX_DOMAIN_NAME_LEN] = {0};
     int ip[4] = {0};

@@ -66,6 +66,7 @@ typedef struct
 
 }SETTING;
 
+int setting_changeServer(const unsigned char* cmdString, unsigned short length);
 
 
 extern SETTING setting;

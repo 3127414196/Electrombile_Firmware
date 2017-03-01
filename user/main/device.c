@@ -92,7 +92,6 @@ static int device_responseERROR(const void* req)
     return 0;
 }
 
-
 static int device_GetDeviceInfo(const void* req, cJSON *param)
 {
     cJSON *autolock = NULL;

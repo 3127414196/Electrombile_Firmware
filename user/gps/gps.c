@@ -473,7 +473,6 @@ void app_gps_thread(void *data)
                         rtc_setSyncFlag(EAT_FALSE);//at next time , updata RTC_time
                         break;
 
-
                     default:
                     	LOG_ERROR("timer[%d] expire!", event.data.timer.timer_id);
                         break;

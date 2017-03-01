@@ -12,8 +12,8 @@ void LED_on(void);
 
 void LED_off(void);
 
-void LED_fastBlink(void);
+void LED_startFastBlink(void);
 
-void LED_slowBlink(void);
+void LED_startSlowBlink(void);
 
 #endif /* USER_INC_LED_H_ */

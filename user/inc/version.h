@@ -21,11 +21,12 @@
  * 1.2.5: allow user to set the battery type manually
  * 1.2.6: remove battery's 50% lower alarm
  * 1.3.1: add outage alarm
+ * 1.4.0: add switch on alarm
  */
 
 #define VERSION_MAJOR   1
-#define VERSION_MINOR   3
-#define VERSION_MICRO   1
+#define VERSION_MINOR   4
+#define VERSION_MICRO   0
 
 
 #define VERSION_INT(a, b, c)    (a << 16 | b << 8 | c)

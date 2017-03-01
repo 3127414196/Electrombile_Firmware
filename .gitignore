@@ -50,6 +50,7 @@ core/SIM808M32_EMBEDDEDAT/app_release
 
 # VS Code settings
 .vscode/
+
 #sourse insight
 *.IAB
 *.IAD
@@ -61,3 +62,4 @@ core/SIM808M32_EMBEDDEDAT/app_release
 *.PRI
 *.PS
 *.WK3
+

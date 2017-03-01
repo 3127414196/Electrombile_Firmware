@@ -27,8 +27,9 @@
 #include "fs.h"
 #include "version.h"
 #include "minilzo.h"
-#include "led.h"
 #include "telecontrol.h"
+//#include "bluetooth.h"
+#include "led.h"
 
 /********************************************************************
  * Macros
@@ -126,9 +127,8 @@ void app_main(void *data)
     APP_init_clib(); //C library initialize, second step
 
     para = (EatEntryPara_st*)data;
-    if(para->is_update_app && para->update_app_result)
+    if(para->is_update_app && para->update_app_result)//APP update succeed
     {
-        //APP update succeed
         LOG_DEBUG("app upgrade success");
         eat_update_app_ok(); //clear update APP flag
     }
@@ -155,7 +155,6 @@ void app_main(void *data)
     fs_initial();
 
     startWatchdog();
-
 
     while(EAT_TRUE)
     {

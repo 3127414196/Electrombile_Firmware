@@ -96,11 +96,6 @@ int cmd_alarm(char alarm_type)
     LOG_DEBUG("send alarm vibrate message.");
     socket_msg->alarmType = alarm_type;
 
-    if(ALARM_VIBRATE == alarm_type)
-    {
-        set_vibration_state(EAT_FALSE);// if alarm, set the vibration state as defend off
-    }
-
     //TODO: should provide the message send failed handler
     socket_sendDataWaitAck(socket_msg, sizeof(MSG_ALARM_REQ), NULL, NULL);
 

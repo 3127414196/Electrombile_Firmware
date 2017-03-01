@@ -76,6 +76,7 @@ void telecontrol_initail(void)
     telecontrol_initSwitchState();
     telecontrol_break_initial();
     telecontrol_cutOff_initial();
+    telecontrol_switch_initial();
 }
 
 /*

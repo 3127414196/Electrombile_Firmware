@@ -31,6 +31,7 @@
 #include "mem.h"
 #include "modem.h"
 #include "data.h"
+#include "telecontrol.h"
 
 int cmd_Login_rsp(const void* msg)
 {
@@ -236,6 +237,7 @@ int cmd_SetServer_rsp(const void* msg)
         rsp->managerSeq = req->managerSeq;
         socket_sendDataDirectly(rsp, sizeof(MSG_SET_SERVER_RSP));
     }
+    return 0;
 }
 
 int cmd_Battery_rsp(const void* msg)
@@ -455,6 +457,8 @@ int cmd_DefendOn_rsp(const void* msg)
     LOG_DEBUG("set defend switch on.");
 
     Reset_AlarmCount();
+    telecontrol_switch_off();
+
     set_vibration_state(EAT_TRUE);
     if(EAT_TRUE != vibration_fixed())
     {
@@ -484,6 +488,8 @@ int cmd_DefendOff_rsp(const void* msg)
     LOG_DEBUG("set defend switch off.");
 
     ResetVibrationTime();
+    telecontrol_switch_on();
+
     set_vibration_state(EAT_FALSE);
     if(EAT_FALSE != vibration_fixed())
     {

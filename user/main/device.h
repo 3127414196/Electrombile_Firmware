@@ -8,5 +8,6 @@
 #define USER_DEVICE_H_
 
 int cmd_device_handler(const void* msg);
+int device_sendGPS(const MSG_THREAD* msg);
 
 #endif

@@ -12,6 +12,8 @@
 #define SETTINGFILE_NAME  L"C:\\setting.conf"
 #define UPGRADE_FILE_NAME  L"C:\\app.bin"
 #define RECORDE_FILE_NAME L"C:\\record.amr"
+#define AUDIO_FILE_NAME_FOUND L"C:\\User\\ftp\\close_audio.amr"
+#define AUDIO_FILE_NAME_LOST L"C:\\User\\ftp\\far_audio.amr"
 #define RECORD_FILE_NAME_CHAR "C:\\record.amr"
 
 void fs_initial(void);

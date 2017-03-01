@@ -4,7 +4,9 @@
  *  Created on: 2017/01/04
  *      Author: lc
  */
+#include <stdio.h>
 #include <string.h>
+
 #include "modem.h"
 #include "protocol.h"
 #include "fs.h"
@@ -37,7 +39,7 @@ void record_modem_run(u8 * buf)
     char server_Filename[MAX_SERVERFILENAME_LEN] = {0};
     u8 imei[MAX_IMEI_LENGTH + 1] = {0};
 
-    if(strstr(buf, "CREC: 2"))
+    if(strstr((const u8*)buf, "CREC: 2"))
     {
         eat_get_imei(imei, MAX_IMEI_LENGTH);
         snprintf(server_Filename, MAX_SERVERFILENAME_LEN, "%s_%d.amr", imei, rtc_getTimestamp());

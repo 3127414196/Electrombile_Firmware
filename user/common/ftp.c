@@ -5,6 +5,7 @@
  *      Author: lc
  */
 #include <string.h>
+#include <stdio.h>
 
 #include "modem.h"
 #include "ftp.h"
@@ -25,7 +26,7 @@ enum{
 typedef void(*FTP_PROC)(u8 *);
 typedef struct
 {
-	u8 cmd[16];
+	char cmd[16];
 	FTP_PROC pfn;
 }MC_FTP_PROC;
 
@@ -90,7 +91,7 @@ void ftp_download_file(char *localFileName, char *serverFileName)
 
 static void ftp_GPRScheck(u8 * buf)
 {
-    if((strstr(buf, "OK") && isGPRSOpening) || (strstr(buf, "ERROR") && strstr(buf, "AT+SAPBR=1,1")))
+    if((strstr((const char *)buf, "OK") && isGPRSOpening) || (strstr((const char *)buf, "ERROR") && strstr((const char *)buf, "AT+SAPBR=1,1")))
     {
         isGPRSOpening = EAT_FALSE;
         modem_AT("AT+FTPCID=1" CR);
@@ -99,11 +100,11 @@ static void ftp_GPRScheck(u8 * buf)
 
 static void ftp_set_server(u8 * buf)
 {
-    unsigned char cmd[MAX_FTPCMD_LEN] = {0};
-    if(strstr(buf, "OK"))
+    char cmd[MAX_FTPCMD_LEN] = {0};
+    if(strstr((const char *)buf, "OK"))
     {
         snprintf(cmd, MAX_FTPCMD_LEN, "AT+FTPSERV=\"%s\"\r", setting.ftp_domain);
-        modem_AT(cmd);
+        modem_AT((u8 *)cmd);
     }
     else
     {
@@ -115,7 +116,7 @@ static void ftp_set_server(u8 * buf)
 
 static void ftp_set_name(u8 * buf)
 {
-    if(strstr(buf, "OK"))
+    if(strstr((const char *)buf, "OK"))
     {
         modem_AT("AT+FTPUN=\"anonymous\"" CR);
     }
@@ -129,8 +130,8 @@ static void ftp_set_name(u8 * buf)
 
 static void ftp_set_file(u8 * buf)
 {
-    unsigned char cmd[MAX_FTPCMD_LEN] = {0};
-    if(strstr(buf, "OK"))
+    char cmd[MAX_FTPCMD_LEN] = {0};
+    if(strstr((const char *)buf, "OK"))
     {
         if(ftp_type == FTP_UPLOAD)
         {
@@ -140,7 +141,7 @@ static void ftp_set_file(u8 * buf)
         {
             snprintf(cmd, MAX_FTPCMD_LEN, "AT+FTPGETNAME=\"%s\"\r", ftp_serverFileName);
         }
-        modem_AT(cmd);
+        modem_AT((u8 *)cmd);
     }
     else
     {
@@ -152,7 +153,7 @@ static void ftp_set_file(u8 * buf)
 
 static void ftp_set_path(u8 * buf)
 {
-    if(strstr(buf, "OK"))
+    if(strstr((const char *)buf, "OK"))
     {
         if(ftp_type == FTP_UPLOAD)
         {
@@ -173,11 +174,11 @@ static void ftp_set_path(u8 * buf)
 
 static void ftp_put_file(u8 * buf)
 {
-    unsigned char cmd[MAX_FTPCMD_LEN] = {0};
-    if(strstr(buf, "OK"))
+    char cmd[MAX_FTPCMD_LEN] = {0};
+    if(strstr((const char *)buf, "OK"))
     {
         snprintf(cmd, MAX_FTPCMD_LEN, "AT+FTPPUTFRMFS=\"%s\"\r", ftp_localFileName);
-        modem_AT(cmd);
+        modem_AT((u8 *)cmd);
     }
     else
     {
@@ -189,11 +190,11 @@ static void ftp_put_file(u8 * buf)
 
 static void ftp_get_file(u8 * buf)
 {
-    unsigned char cmd[MAX_FTPCMD_LEN] = {0};
-    if(strstr(buf, "OK"))
+    char cmd[MAX_FTPCMD_LEN] = {0};
+    if(strstr((const char *)buf, "OK"))
     {
         snprintf(cmd, MAX_FTPCMD_LEN, "AT+FTPGETTOFS=0,\"%s\"\r", ftp_localFileName);
-        modem_AT(cmd);
+        modem_AT((u8 *)cmd);
     }
     else
     {
@@ -205,7 +206,7 @@ static void ftp_get_file(u8 * buf)
 
 static void ftp_put_end(u8 * buf)
 {
-    if(strstr(buf, "FTPPUTFRMFS: 0"))
+    if(strstr((const char *)buf, "FTPPUTFRMFS: 0"))
     {
         LOG_DEBUG("put file OK");
         ftp_sendMsg2Event(FTP_SUCCESS);
@@ -221,7 +222,7 @@ static void ftp_put_end(u8 * buf)
 
 static void ftp_get_end(u8 * buf)
 {
-    if(strstr(buf, "FTPGETTOFS: 0"))
+    if(strstr((const char *)buf, "FTPGETTOFS: 0"))
     {
         LOG_DEBUG("get file OK");
         ftp_sendMsg2Event(FTP_SUCCESS);
@@ -255,7 +256,7 @@ void ftp_modem_run(u8 * buf)
     int i = 0;
     for (i = 0; i < sizeof(ftp_procs) / sizeof(ftp_procs[0]); i++)
     {
-        if (strstr(buf, ftp_procs[i].cmd))
+        if (strstr((const char *)buf, ftp_procs[i].cmd))
         {
             ftp_procs[i].pfn(buf);
         }

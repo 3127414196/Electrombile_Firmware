@@ -223,6 +223,62 @@ static void gps_GPSSignalSend(const MSG_THREAD* thread_msg)
     return;
 }
 
+static void device_GpsHodp(const MSG_THREAD* thread_msg)
+{
+    #define GPS_NOT_FIX_HDOP 99.99
+    unsigned char buf[1024] = {0};
+    unsigned char* buf_p1 = NULL;
+    int rc;
+    u8 msgLen = 0;
+    MSG_THREAD *msg = NULL;
+    GPS_HDOP_INFO *data = NULL;
+    DEVICE_LOCATION_SEQ *seq = NULL;
+    float longtitude = 0.0;
+    float latitude = 0.0;
+    float hdop = 0.0;
+    char satellites = 0;
+
+    /*
+    *$GPGGA,083316.000,0030.5131,N,00114.4249,E,1,3,6.00,163.8,M,-13.5,M,,
+    */
+    rc = eat_gps_nmea_info_output(EAT_NMEA_OUTPUT_GPGGA,buf,1024);
+    if(rc == EAT_FALSE)
+    {
+        LOG_ERROR("get gps error ,and erturn is %d",rc);
+        return;
+    }
+
+    msgLen = sizeof(MSG_THREAD)+sizeof(GPS_HDOP_INFO);
+    msg = allocMsg(msgLen);
+    if (!msg)
+    {
+        LOG_ERROR("alloc msg failed!");
+        return ;
+    }
+    seq = (DEVICE_LOCATION_SEQ*)thread_msg->data;
+    msg->cmd = thread_msg->cmd;
+    msg->length = sizeof(GPS_HDOP_INFO);
+    data = (GPS_HDOP_INFO*)(msg->data);
+    data->managerSeq = seq->seq;
+
+    buf_p1 = string_bypass(buf, "$GPGGA,");
+    rc = sscanf(buf_p1,"%*f,%f,%*c,%f,%*c,%*d,%d,%f,%*s",&latitude,&longtitude,&satellites,&hdop);
+    if(rc == 4 && latitude > 0 && longtitude > 0)
+    {
+        data->hdop = hdop;
+        data->satellites = satellites;
+    }
+    else
+    {
+        data->hdop = GPS_NOT_FIX_HDOP;
+        data->satellites = satellites;
+    }
+
+    LOG_DEBUG("send hdop to MainThread");
+    sendMsg(THREAD_MAIN, msg, msgLen);
+    return ;
+}
+
 static eat_bool gps_GetGps(void)
 {
     unsigned char buf[1024] = {0};
@@ -504,6 +560,10 @@ void app_gps_thread(void *data)
                         LOG_DEBUG("gps get CMD_THREAD_GPSHDOP.");
                         gps_GPSSignalSend(msg);
                         break;
+
+                    case CMD_THREAD_DEVICE_GPSHODP:
+                        LOG_DEBUG("gps get CMD_THREAD_DEVICE_GPSHODP");
+                        device_GpsHodp(msg);
 
                     default:
                         LOG_ERROR("cmd(%d) not processed!", msg->cmd);

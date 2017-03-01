@@ -112,6 +112,7 @@ static eat_bool vibration_alarm_switchOpen(void)
     if(isSwitchDefend())
     {
         set_vibration_state(EAT_FALSE);// if alarm, set the vibration state as defend off
+        ResetVibrationTime();
     }
     return vibration_sendAlarm(ALARM_SWITCH_CHANGE);
 }

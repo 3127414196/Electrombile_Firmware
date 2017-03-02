@@ -280,12 +280,13 @@ static void vibration_switchState_handler(void)
     static EatGpioLevel_enum last_switchState = EAT_GPIO_LEVEL_LOW;
 
     EatGpioLevel_enum switchState = telecontrol_getSwitchState();
-    if(vibration_fixed())
+    if(EAT_GPIO_LEVEL_LOW == last_switchState && EAT_GPIO_LEVEL_HIGH == switchState)
     {
-        if(EAT_GPIO_LEVEL_LOW == last_switchState && EAT_GPIO_LEVEL_HIGH == switchState)
+        if(isSwitchDefend())
         {
-            vibration_alarm_switchOpen();
+            set_vibration_state(EAT_FALSE);
         }
+        vibration_alarm_switchOpen();
     }
     last_switchState = switchState;
 }

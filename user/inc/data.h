@@ -37,10 +37,6 @@ int get_manager_seq(void);
 void Vibration_setMoved(eat_bool state);
 eat_bool Vibration_isMoved(void);
 
-void Reset_AlarmCount(void);
-int Get_AlarmCount(void);
-void Add_AlarmCount(void);
-
 void battery_setVoltage(u8 voltage);
 u8 battery_getVoltage(void);
 void battery_setPercent(u8 percent);

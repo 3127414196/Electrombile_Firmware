@@ -195,24 +195,6 @@ eat_bool Vibration_isMoved(void)
 }
 
 /*
-*ctrl the alarm times
-*/
-void Reset_AlarmCount(void)
-{
-    AlarmCount = 0;
-}
-
-int Get_AlarmCount(void)
-{
-    return AlarmCount;
-}
-
-void Add_AlarmCount(void)
-{
-    AlarmCount++;
-}
-
-/*
 *batteryVoltage
 */
 void battery_setVoltage(u8 voltage)

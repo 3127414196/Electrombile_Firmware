@@ -456,7 +456,6 @@ int cmd_DefendOn_rsp(const void* msg)
 
     LOG_DEBUG("set defend switch on.");
 
-    Reset_AlarmCount();
     telecontrol_switch_off();
 
     set_vibration_state(EAT_TRUE);

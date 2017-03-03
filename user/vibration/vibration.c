@@ -92,14 +92,8 @@ static eat_bool vibration_alarm_move(void)
     MSG_THREAD *msg = NULL;
     ALARM_INFO *msg_data = NULL;
 
-    Add_AlarmCount();
-    if(Get_AlarmCount() < 2)
-    {
-        set_vibration_state(EAT_FALSE);// if alarm, set the vibration state as defend off
-        return vibration_sendAlarm(ALARM_VIBRATE);
-    }
-
-    return EAT_FALSE;
+    set_vibration_state(EAT_FALSE);// if alarm, set the vibration state as defend off
+    return vibration_sendAlarm(ALARM_VIBRATE);
 }
 
 static eat_bool vibration_alarm_cutoff(void)
@@ -268,7 +262,6 @@ static void vibration_move_handler(void)
                 }
             }
             telecontrol_switch_off();
-            Reset_AlarmCount();
         }
     }
 
@@ -285,6 +278,7 @@ static void vibration_switchState_handler(void)
         if(isSwitchDefend())
         {
             set_vibration_state(EAT_FALSE);
+            ResetVibrationTime();
         }
         vibration_alarm_switchOpen();
     }

@@ -635,10 +635,20 @@ int device_sendGPS(const MSG_THREAD* msg)
     }
 
     cJSON_AddNumberToObject(gps, "timestamp", rtc_getTimestamp());
-    cJSON_AddNumberToObject(gps, "lat", last_gps->gps.latitude);
-    cJSON_AddNumberToObject(gps, "lng", last_gps->gps.longitude);
-    cJSON_AddNumberToObject(gps, "speed", last_gps->gps.speed);
-    cJSON_AddNumberToObject(gps, "course", last_gps->gps.course);
+    if(last_gps->isGps)
+    {
+        cJSON_AddNumberToObject(gps, "lat", last_gps->gps.latitude);
+        cJSON_AddNumberToObject(gps, "lng", last_gps->gps.longitude);
+        cJSON_AddNumberToObject(gps, "speed", last_gps->gps.speed);
+        cJSON_AddNumberToObject(gps, "course", last_gps->gps.course);
+    }
+    else
+    {
+        cJSON_AddNumberToObject(gps, "lat", 0);
+        cJSON_AddNumberToObject(gps, "lng", 0);
+        cJSON_AddNumberToObject(gps, "speed", 0);
+        cJSON_AddNumberToObject(gps, "course", 0);
+    }
     cJSON_AddItemToObject(result, "gps", gps);
 
     cJSON_AddItemToObject(json_root, "result", result);

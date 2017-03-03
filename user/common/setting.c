@@ -160,7 +160,7 @@ static void setting_initial(void)
 
     //autolock configuration
     setting.isAutodefendFixed = EAT_TRUE;
-    setting.autodefendPeriod = 5;
+    setting.autodefendPeriod = 1;
 
     //Baterry Type
     setting.isUserType = EAT_FALSE;
@@ -168,7 +168,7 @@ static void setting_initial(void)
     setting.BaterryType_Judging = NULL;
     setting.isBatteryJudging = EAT_FALSE;
 
-    setting.BluetoothSwitch = EAT_TRUE;
+    setting.BluetoothSwitch = EAT_FALSE;
     strncpy(setting.BluetoothId, "00:00:00:00:00:00", BLUETOOTH_ID_LEN);
 
     return;

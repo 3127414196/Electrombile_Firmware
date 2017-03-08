@@ -222,7 +222,7 @@ typedef struct
 {
     MSG_HEADER header;
     int version;
-    char deciveType;
+    char deviceType;
     char IMEI[MAX_IMEI_LENGTH];
 }__attribute__((__packed__)) MSG_LOGIN_REQ;
 
@@ -230,17 +230,17 @@ typedef struct
 {
     MSG_HEADER header;
     int version;
-    char deciveType;
+    char deviceType;
     char IMEI[MAX_IMEI_LENGTH];
     char voltage;
 }__attribute__((__packed__)) MSG_LOGIN_REQ_NEW;
 
 
 enum DeviceType{
-    XiaoAnBao1 = 1,
-    XiaoAnBao2 = 2,
-    XiaoAnBao3 = 3,
-    XiaoAnBao4 = 4
+    deviceNull      = 0,
+    deviceTK115     = 1,
+    deviceSimcomG1  = 2,
+    deviceSimcomG2  = 3
 };
 
 typedef MSG_HEADER MSG_LOGIN_RSP;

@@ -70,7 +70,6 @@ static long double getdistance(LOCAL_GPS *pre_gps, LOCAL_GPS *gps)  //get distan
 static eat_bool gps_DuplicateCheck(LOCAL_GPS *pre_gps, LOCAL_GPS *gps)
 {
     double distance = 0;
-    static int timerCount =0;
 
     if(pre_gps->isGps != gps->isGps)
     {
@@ -91,19 +90,9 @@ static eat_bool gps_DuplicateCheck(LOCAL_GPS *pre_gps, LOCAL_GPS *gps)
             }
             else
             {
-                //avoid appearing the situation that distance always beyond 70
-                if(distance >= 70 && timerCount < 5)
-                {
-                    timerCount++;
-                    LOG_DEBUG("GPS is floating. %f, %f.", pre_gps->gps.latitude, gps->gps.latitude);
-                    return EAT_TRUE;
-                }
-                else
-                {
-                    timerCount = 0;
-                    LOG_DEBUG("GPS is different. %f, %f.", pre_gps->gps.latitude, gps->gps.latitude);
-                    return EAT_FALSE;
-                }
+
+                LOG_DEBUG("GPS is different. %f, %f.", pre_gps->gps.latitude, gps->gps.latitude);
+                return EAT_FALSE;
             }
         }
     }

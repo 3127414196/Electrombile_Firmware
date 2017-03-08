@@ -348,11 +348,13 @@ static int device_SetDeffend(const void* req, cJSON *param)
         {
             set_vibration_state(EAT_TRUE);
             telecontrol_switch_off();
+            ResetVibrationTime();
         }
         else
         {
             set_vibration_state(EAT_FALSE);
             telecontrol_switch_on();
+            ResetVibrationTime();
         }
         device_responseOK(req);
     }
@@ -627,17 +629,9 @@ int device_sendGPS(const MSG_THREAD* msg)
     req.header.length = 0;
     req.header.cmd = CMD_DEVICE;
 
-    gps = cJSON_CreateObject();
-    if(!gps)
-    {
-        device_responseERROR(&req);
-        return -1;
-    }
-
     result = cJSON_CreateObject();
     if(!result)
     {
-        cJSON_Delete(gps);
         device_responseERROR(&req);
         return -1;
     }
@@ -645,31 +639,31 @@ int device_sendGPS(const MSG_THREAD* msg)
     json_root = cJSON_CreateObject();
     if(!json_root)
     {
-        cJSON_Delete(gps);
         cJSON_Delete(result);
-        cJSON_Delete(json_root);
         device_responseERROR(&req);
         return -1;
     }
 
-    cJSON_AddNumberToObject(gps, "timestamp", rtc_getTimestamp());
     if(last_gps->isGps)
     {
+        gps = cJSON_CreateObject();
+        if(!gps)
+        {
+            cJSON_Delete(result);
+            cJSON_Delete(json_root);
+            device_responseERROR(&req);
+            return -1;
+        }
+        cJSON_AddNumberToObject(gps, "timestamp", rtc_getTimestamp());
         cJSON_AddNumberToObject(gps, "lat", last_gps->gps.latitude);
         cJSON_AddNumberToObject(gps, "lng", last_gps->gps.longitude);
         cJSON_AddNumberToObject(gps, "speed", last_gps->gps.speed);
         cJSON_AddNumberToObject(gps, "course", last_gps->gps.course);
+        cJSON_AddItemToObject(result, "gps", gps);
     }
-    else
-    {
-        cJSON_AddNumberToObject(gps, "lat", 0);
-        cJSON_AddNumberToObject(gps, "lng", 0);
-        cJSON_AddNumberToObject(gps, "speed", 0);
-        cJSON_AddNumberToObject(gps, "course", 0);
-    }
-    cJSON_AddItemToObject(result, "gps", gps);
 
     cJSON_AddItemToObject(json_root, "result", result);
+    cJSON_AddNumberToObject(json_root, "code", 0);
 
     buffer = cJSON_PrintUnformatted(json_root);
     if(!buffer)

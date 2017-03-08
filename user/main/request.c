@@ -39,7 +39,7 @@ int cmd_Login(void)
     memcpy(msg->IMEI, imei, MAX_IMEI_LENGTH);
 
     msg->voltage = battery_getVoltage();
-    msg->deciveType = deviceSimcomG2;
+    msg->deviceType = deviceSimcomG2;
 
     LOG_DEBUG("send login message.");
 

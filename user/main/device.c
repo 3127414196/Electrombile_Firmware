@@ -100,6 +100,24 @@ static int device_responseERROR(const void* req)
     return 0;
 }
 
+static int device_responseNoCmd(const void* req)
+{
+    char *buf = "{\"code\":111}";
+    int length = sizeof(MSG_DEVICE_RSP) + strlen(buf);
+
+    MSG_DEVICE_RSP *msg = alloc_device_msg(req, length);
+    if(!msg)
+    {
+        LOG_ERROR("device inner error");
+        return -1;
+    }
+    strncpy(msg->data, buf, strlen(buf));
+
+    socket_sendDataDirectly(msg, length);
+    return 0;
+}
+
+
 static int device_GetDeviceInfo(const void* req, cJSON *param)
 {
     cJSON *autolock = NULL;
@@ -1074,17 +1092,21 @@ int cmd_device_handler(const void* msg)
             if (pfn)
             {
                 pfn(msg, json_param);
+                cJSON_Delete(json_root);
                 return 0;
             }
             else
             {
                 LOG_ERROR("Message %d not processed!", cmd);
+                cJSON_Delete(json_root);
                 return -1;
             }
         }
     }
 
     LOG_ERROR("unknown device type %d!", cmd);
+    cJSON_Delete(json_root);
+    device_responseNoCmd(req);
     return -1;
 }
 

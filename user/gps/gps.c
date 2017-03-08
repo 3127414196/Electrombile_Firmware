@@ -135,7 +135,6 @@ static void gps_at_read_handler(void)
 static eat_bool gps_saveGps(void)
 {
     LOCAL_GPS gps;
-    LOCAL_GPS *last_gps = gps_get_last();
 
     gps.isGps = EAT_TRUE;
     gps.gps.timestamp = rtc_getTimestamp();
@@ -144,10 +143,7 @@ static eat_bool gps_saveGps(void)
     gps.gps.speed = speed;
     gps.gps.course = course;
 
-    memcpy(last_gps, &gps, sizeof(LOCAL_GPS));
-
     gps_save_last(&gps);//save the last gps in data
-
     return EAT_TRUE;
 
 }

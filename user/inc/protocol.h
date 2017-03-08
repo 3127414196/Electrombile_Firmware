@@ -237,10 +237,10 @@ typedef struct
 
 
 enum DeviceType{
-    XiaoAnBao1 = 1,
-    XiaoAnBao2 = 2,
-    XiaoAnBao3 = 3,
-    XiaoAnBao4 = 4
+    deviceNull      = 0,
+    deviceTK115     = 1,
+    deviceSimcomG1  = 2,
+    deviceSimcomG2  = 3
 };
 
 typedef MSG_HEADER MSG_LOGIN_RSP;

@@ -57,6 +57,8 @@ enum
     DEVICE_GET_LOG           = 20,
     DEVICE_REBOOT            = 21,
     DEVICE_SWITCHDEFEND      = 22,
+    DEVICE_GET_SWICTHDEFEND  = 23,
+    DEVICE_GET_CONTROL_LOCK  = 24,
 }DEVICE_CMD_NAME;
 
 typedef int (*DEVICE_PROC)(const void*, cJSON*);
@@ -1037,6 +1039,115 @@ static int device_swicthDefend(const void* req, cJSON *param)
     return 0;
 }
 
+static int device_GetSwitchDefend(const void* req, cJSON *param)
+{
+    cJSON *result = NULL;
+    cJSON *json_root = NULL;
+
+    char *buffer = NULL;
+    int msgLen = 0;
+    MSG_DEVICE_RSP *rsp = NULL;
+
+    result = cJSON_CreateObject();
+    if(!result)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(result);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_AddNumberToObject(json_root, "code", 0);
+
+    cJSON_AddNumberToObject(result, "sw", isSwitchDefend());
+    cJSON_AddItemToObject(json_root, "result", result);
+
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_Delete(json_root);
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)req, msgLen);
+
+    if(!rsp)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
+    return 0;
+}
+
+static int device_GetControlLock(const void* req, cJSON *param)
+{
+    cJSON *result = NULL;
+    cJSON *json_root = NULL;
+
+    char *buffer = NULL;
+    int msgLen = 0;
+    MSG_DEVICE_RSP *rsp = NULL;
+
+    result = cJSON_CreateObject();
+    if(!result)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    json_root = cJSON_CreateObject();
+    if(!json_root)
+    {
+        cJSON_Delete(result);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_AddNumberToObject(json_root, "code", 0);
+
+    cJSON_AddNumberToObject(result, "sw", telecontrol_isCarLocked());
+    cJSON_AddItemToObject(json_root, "result", result);
+
+    buffer = cJSON_PrintUnformatted(json_root);
+    if(!buffer)
+    {
+        cJSON_Delete(json_root);
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    cJSON_Delete(json_root);
+    msgLen = sizeof(MSG_DEVICE_RSP) + strlen(buffer);
+    rsp = alloc_device_msg((MSG_HEADER*)req, msgLen);
+
+    if(!rsp)
+    {
+        device_responseERROR(req);
+        return EAT_FALSE;
+    }
+
+    strncpy(rsp->data, buffer, strlen(buffer));
+    free(buffer);
+
+    socket_sendDataDirectly(rsp, msgLen);
+    return 0;
+}
+
+
 static DEVICE_MSG_PROC deviceProcs[] =
 {
     {DEVICE_GET_DEVICEINFO,    device_GetDeviceInfo},
@@ -1061,6 +1172,8 @@ static DEVICE_MSG_PROC deviceProcs[] =
     {DEVICE_GET_LOG,           device_GetLog},
     {DEVICE_REBOOT,            device_reboot},
     {DEVICE_SWITCHDEFEND,      device_swicthDefend},
+    {DEVICE_GET_SWICTHDEFEND,  device_GetSwitchDefend},
+    {DEVICE_GET_CONTROL_LOCK,  device_GetControlLock},
 };
 
 int cmd_device_handler(const void* msg)

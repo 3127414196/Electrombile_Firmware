@@ -7,6 +7,9 @@
 #include <eat_interface.h>
 
 #include "telecontrol.h"
+
+eat_bool isCarLocked = EAT_FALSE;
+
 /*
 *function: 初始化电门开关状态检测模块，初始化下拉
 */
@@ -84,6 +87,7 @@ void telecontrol_initail(void)
 */
 void telecontrol_lock(void)
 {
+    isCarLocked = EAT_TRUE;
     telecontrol_break_on();
     telecontrol_switch_on();
 }
@@ -93,6 +97,7 @@ void telecontrol_lock(void)
 */
 void telecontrol_unlock(void)
 {
+    isCarLocked = EAT_FALSE;
     telecontrol_break_off();
     telecontrol_switch_off();
 }
@@ -103,5 +108,10 @@ void telecontrol_unlock(void)
 EatGpioLevel_enum telecontrol_getSwitchState(void)
 {
     return eat_gpio_read(EAT_PIN60_COL2);
+}
+
+eat_bool telecontrol_isCarLocked(void)
+{
+    return isCarLocked;
 }
 

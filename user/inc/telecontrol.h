@@ -19,5 +19,6 @@ void telecontrol_break_on(void);
 void telecontrol_break_off(void);
 
 EatGpioLevel_enum telecontrol_getSwitchState(void);
+eat_bool telecontrol_isCarLocked(void);
 
 #endif/*__TELECONTROL_H__*/

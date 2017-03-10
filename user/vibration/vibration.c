@@ -301,7 +301,7 @@ static void vibration_oneSecond_Loop(void)
 {
     vibration_move_handler();
     vibration_cutoff_handler();
-    vibration_switchState_handler();
+    //vibration_switchState_handler();
 }
 
 void app_vibration_thread(void *data)

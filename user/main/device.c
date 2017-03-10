@@ -1163,17 +1163,17 @@ static DEVICE_MSG_PROC deviceProcs[] =
     {DEVICE_SET_BLUETOOTHID,   device_SetBluetoothId},
     {DEVICE_DOWNLOAD_AUDIOFILE,device_DownloadAudioFile},
     {DEVICE_SET_BLUETOOTHSW,   device_SetBlutoothSwitch},
-    {DEVICE_START_ALARM,       device_StartAlarm},
-    {DEVICE_CONTROL_LOCK,      device_ControlCarLocked},
+    //{DEVICE_START_ALARM,       device_StartAlarm},
+    //{DEVICE_CONTROL_LOCK,      device_ControlCarLocked},
     {DEVICCE_GET_SERVER,       device_GetServer},
     {DEVICE_GET_GPS_SIGNAL,    device_GetGpsSignal},
     {DEVICE_GET_GSM_SIGNAL,    device_GetGsmSignal},
     {DEVICE_AT,                device_AT},
     {DEVICE_GET_LOG,           device_GetLog},
     {DEVICE_REBOOT,            device_reboot},
-    {DEVICE_SWITCHDEFEND,      device_swicthDefend},
-    {DEVICE_GET_SWICTHDEFEND,  device_GetSwitchDefend},
-    {DEVICE_GET_CONTROL_LOCK,  device_GetControlLock},
+    //{DEVICE_SWITCHDEFEND,      device_swicthDefend},
+    //{DEVICE_GET_SWICTHDEFEND,  device_GetSwitchDefend},
+    //{DEVICE_GET_CONTROL_LOCK,  device_GetControlLock},
 };
 
 int cmd_device_handler(const void* msg)

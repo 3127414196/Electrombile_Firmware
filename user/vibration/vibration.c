@@ -300,7 +300,7 @@ static void vibration_cutoff_handler(void)
 static void vibration_oneSecond_Loop(void)
 {
     vibration_move_handler();
-    vibration_cutoff_handler();
+    //vibration_cutoff_handler();
     //vibration_switchState_handler();
 }
 

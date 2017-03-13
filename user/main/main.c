@@ -113,7 +113,7 @@ void app_func_ext1(void *data)
     eat_uart_set_debug_config(EAT_UART_DEBUG_MODE_UART, &cfg);
 
     LED_on();
-    telecontrol_initail();
+    //telecontrol_initail();
 }
 
 void app_main(void *data)

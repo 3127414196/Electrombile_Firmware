@@ -76,10 +76,10 @@ void telecontrol_switch_off(void)
 */
 void telecontrol_initail(void)
 {
-    telecontrol_initSwitchState();
-    telecontrol_break_initial();
+    //telecontrol_initSwitchState();
+    //telecontrol_break_initial();
     telecontrol_cutOff_initial();
-    telecontrol_switch_initial();
+    //telecontrol_switch_initial();
 }
 
 /*
@@ -88,8 +88,8 @@ void telecontrol_initail(void)
 void telecontrol_lock(void)
 {
     isCarLocked = EAT_TRUE;
-    telecontrol_break_on();
-    telecontrol_switch_on();
+    //telecontrol_break_on();
+    //telecontrol_switch_on();
 }
 
 /*
@@ -98,8 +98,8 @@ void telecontrol_lock(void)
 void telecontrol_unlock(void)
 {
     isCarLocked = EAT_FALSE;
-    telecontrol_break_off();
-    telecontrol_switch_off();
+    //telecontrol_break_off();
+    //telecontrol_switch_off();
 }
 
 /*

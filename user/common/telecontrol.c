@@ -44,7 +44,7 @@ static void telecontrol_cutOff_initial(void)
 */
 void telecontrol_break_on(void)
 {
-    eat_gpio_setup(EAT_PIN59_COL3, EAT_GPIO_DIR_OUTPUT, EAT_GPIO_LEVEL_HIGH);// break on
+    //eat_gpio_setup(EAT_PIN59_COL3, EAT_GPIO_DIR_OUTPUT, EAT_GPIO_LEVEL_HIGH);// break on
 }
 
 /*
@@ -52,7 +52,7 @@ void telecontrol_break_on(void)
 */
 void telecontrol_break_off(void)
 {
-    eat_gpio_setup(EAT_PIN59_COL3, EAT_GPIO_DIR_OUTPUT, EAT_GPIO_LEVEL_LOW);// break off
+    //eat_gpio_setup(EAT_PIN59_COL3, EAT_GPIO_DIR_OUTPUT, EAT_GPIO_LEVEL_LOW);// break off
 }
 
 /*
@@ -60,7 +60,7 @@ void telecontrol_break_off(void)
 */
 void telecontrol_switch_on(void)
 {
-    eat_gpio_setup(EAT_PIN61_COL1, EAT_GPIO_DIR_OUTPUT, EAT_GPIO_LEVEL_HIGH);// switch on
+    //eat_gpio_setup(EAT_PIN61_COL1, EAT_GPIO_DIR_OUTPUT, EAT_GPIO_LEVEL_HIGH);// switch on
 }
 
 /*
@@ -68,7 +68,7 @@ void telecontrol_switch_on(void)
 */
 void telecontrol_switch_off(void)
 {
-    eat_gpio_setup(EAT_PIN61_COL1, EAT_GPIO_DIR_OUTPUT, EAT_GPIO_LEVEL_LOW);// switch off
+    //eat_gpio_setup(EAT_PIN61_COL1, EAT_GPIO_DIR_OUTPUT, EAT_GPIO_LEVEL_LOW);// switch off
 }
 
 /*
@@ -107,7 +107,7 @@ void telecontrol_unlock(void)
 */
 EatGpioLevel_enum telecontrol_getSwitchState(void)
 {
-    return eat_gpio_read(EAT_PIN60_COL2);
+    return 0;//eat_gpio_read(EAT_PIN60_COL2);
 }
 
 eat_bool telecontrol_isCarLocked(void)

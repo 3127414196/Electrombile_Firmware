@@ -32,6 +32,11 @@
 #include "telecontrol.h"
 #include "audio_source.h"
 #include "response.h"
+enum
+{
+    SIMCOM_SERVER = 0,
+    FTP_SERVER    = 1
+}SERVER_TYPE;
 
 enum
 {
@@ -46,6 +51,7 @@ enum
     DEVICE_START_RECORD      = 8,
     DEVICE_STOP_RECORD       = 9,
     DEVICE_SET_BLUETOOTHID   = 10,
+    DEVICE_SET_SERVER        = 11,
     DEVICE_DOWNLOAD_AUDIOFILE= 12,
     DEVICE_SET_BLUETOOTHSW   = 13,
     DEVICE_START_ALARM       = 14,
@@ -542,6 +548,82 @@ static int device_SetBluetoothId(const void* req, cJSON *param)
         device_responseERROR(req);
     }
 
+    return 0;
+}
+
+static int device_SetServer(const void* req, cJSON *param)
+{
+    cJSON *json_type = NULL;
+    cJSON *json_server = NULL;
+    int type = 0;
+    int count = 0;
+    u16 port = 0;
+    u32 ip[4] = {0};
+    char domain[MAX_DOMAIN_NAME_LEN] = {0};
+
+    if(!param)
+    {
+        return device_responseERROR(req);
+    }
+
+    json_type = cJSON_GetObjectItem(param, "type");
+    if(!json_type)
+    {
+        device_responseERROR(req);
+        return 0;
+    }
+    type = json_type->valueint;
+
+
+    json_server = cJSON_GetObjectItem(param, "server");
+    if(!json_server)
+    {
+        device_responseERROR(req);
+        return 0;
+    }
+
+    if(type == FTP_SERVER)
+    {
+        LOG_ERROR("no need to set ftp server!");
+        device_responseNoCmd(req);
+        return 0;
+    }
+
+    count = sscanf(json_server->valuestring, "%u.%u.%u.%u:%hd", &ip[0], &ip[1], &ip[2], &ip[3], &port);
+    if(5 == count)
+    {
+        device_responseOK(req);
+        setting.addr_type = ADDR_TYPE_IP;
+        setting.ipaddr[0] = (u8)ip[0];
+        setting.ipaddr[1] = (u8)ip[1];
+        setting.ipaddr[2] = (u8)ip[2];
+        setting.ipaddr[3] = (u8)ip[3];
+        setting.port = port;
+
+        setting_save();
+        LOG_DEBUG("server save %s:%d successful!",json_server->valuestring, port);
+
+        eat_reset_module();
+        return 0;
+    }
+
+    count = sscanf(json_server->valuestring, "%[^:]:%hd", domain, &port);
+    if(2 == count)
+    {
+        device_responseOK(req);
+        setting.addr_type = ADDR_TYPE_DOMAIN;
+        strncpy(setting.domain, domain, MAX_DOMAIN_NAME_LEN);
+        setting.port = port;
+
+        setting_save();
+        LOG_DEBUG("server proc %s:%d successful!", json_server->valuestring, port);
+
+        eat_reset_module();
+        return 0;
+    }
+
+    LOG_DEBUG("server error: %d", type, json_server->valuestring);
+    device_responseERROR(req);
     return 0;
 }
 
@@ -1161,6 +1243,7 @@ static DEVICE_MSG_PROC deviceProcs[] =
     {DEVICE_START_RECORD,      device_StartRecord},
     {DEVICE_STOP_RECORD,       device_StopRecord},
     //{DEVICE_SET_BLUETOOTHID,   device_SetBluetoothId},
+    {DEVICE_SET_SERVER,        device_SetServer},
     {DEVICE_DOWNLOAD_AUDIOFILE,device_DownloadAudioFile},
     //{DEVICE_SET_BLUETOOTHSW,   device_SetBlutoothSwitch},
     //{DEVICE_START_ALARM,       device_StartAlarm},

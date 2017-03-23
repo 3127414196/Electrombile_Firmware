@@ -10,7 +10,7 @@
 #include "modem.h"
 #include "protocol.h"
 #include "fs.h"
-#include "ftp.h"
+#include "http.h"
 #include "log.h"
 #include "record.h"
 
@@ -43,7 +43,7 @@ void record_modem_run(u8 * buf)
     {
         eat_get_imei(imei, MAX_IMEI_LENGTH);
         snprintf(server_Filename, MAX_SERVERFILENAME_LEN, "%s_%d.amr", imei, rtc_getTimestamp());
-        ftp_upload_file(RECORD_FILE_NAME_CHAR, server_Filename);
+        ftp_upload_file(server_Filename);
         LOG_INFO("start to upload record.amr : %s", server_Filename);
     }
 }

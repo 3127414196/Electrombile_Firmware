@@ -16,7 +16,7 @@
 #include "client.h"
 #include "socket.h"
 #include "fs.h"
-#include "ftp.h"
+#include "http.h"
 #include "msg.h"
 #include "log.h"
 #include "uart.h"
@@ -531,13 +531,13 @@ static int device_DownloadAudioFile(const void* req, cJSON *param)
     {
         fileName = cJSON_GetObjectItem(param, "fileName");
         strncpy(fileNameString, fileName->valuestring,32);
-        ftp_download_file("close_audio.amr", fileNameString);
+        http_download_file("close_audio.amr", fileNameString);
     }
     else if(use->valueint == 1)
     {
         fileName = cJSON_GetObjectItem(param, "fileName");
         strncpy(fileNameString, fileName->valuestring,32);
-        ftp_download_file("far_audio.amr", fileNameString);
+        http_download_file("far_audio.amr", fileNameString);
     }
     else if(use->valueint == 3)
     {

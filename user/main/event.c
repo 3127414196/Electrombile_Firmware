@@ -27,7 +27,7 @@
 #include "response.h"
 #include "msg_queue.h"
 #include "mem.h"
-#include "http.h"
+#include "ftp.h"
 #include "audio_source.h"
 #include "seek.h"
 #include "record.h"
@@ -462,7 +462,7 @@ static int event_mod_ready_rd(const EatEvent_st* event)
         cmd_SimInfo(buf + 9);//str(AT+CCID\r\n) = 9
     }
 
-    ftp_modem_run(buf, len);
+    ftp_modem_run(buf);
 
     record_modem_run(buf);
 

@@ -15,7 +15,7 @@
 #include "utils.h"
 #include "version.h"
 #include "modem.h"
-#include "http.h"
+#include "ftp.h"
 
 #define MAX_CMD_LENGTH (16)
 #define MAX_CMD_NUMBER  (32)
@@ -131,13 +131,13 @@ static int cmd_AT(const unsigned char* cmdString, unsigned short length)
 
 static int cmd_upload(const unsigned char* cmdString, unsigned short length)
 {
-    http_upload_file("");
+    ftp_upload_file("NOTHING", "NOTHING");
     return 0;
 }
 
 static int cmd_download(const unsigned char* cmdString, unsigned short length)
 {
-    http_download_file("C:\\temp.amr", "record");
+    ftp_download_file("NOTHING", "NOTHING");
     return 0;
 }
 

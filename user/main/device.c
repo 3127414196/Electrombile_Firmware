@@ -16,7 +16,7 @@
 #include "client.h"
 #include "socket.h"
 #include "fs.h"
-#include "http.h"
+#include "ftp.h"
 #include "msg.h"
 #include "log.h"
 #include "uart.h"
